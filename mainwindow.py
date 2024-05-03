@@ -21,6 +21,7 @@ class MainWindow(QWidget):
         self.ui.setupUi(self)
 
         # Instance Attributes
+        self.fileName = None
         self.currentFrame = None
         self.grayScale = False
         previewPen = QPen(QColor("green"))
@@ -40,20 +41,34 @@ class MainWindow(QWidget):
 
         self.playPauseButton = self.ui.playPause
 
+        self.ui.playPause.clicked.connect(self.playPause)
+
         self.previewWindow = self.ui.previewWindow
 
-        self.openVideo()
 
+    def playPause(self):
+        if self.fileName is None:
+            return
+
+        if self.playPauseButton.text() == "Play":
+            self.refreshTimer.start()
+            self.playPauseButton.setText("Pause")
+        else:
+            self.refreshTimer.stop()
+            self.playPauseButton.setText("Play")
 
     def openVideo(self):
-        # self.fileName, _ = QFileDialog.getOpenFileName(self, "Open Video", "", "Video Files (*.mp4 *.avi *.mkv)")
+        self.fileName, _ = QFileDialog.getOpenFileName(self, "Open Video", "", "Video Files (*.mp4 *.avi *.mkv)")
         self.fileName = "D:\\point detection algorithm implementation-python\\750.mp4"
         if self.fileName != '':
             self.video = cv2.VideoCapture(self.fileName)
             self.playPauseButton.setText("Pause")
-        self.refreshTimer.start(1000)
+            self.refreshTimer.start(1000)
 
     def paintEvent(self, paintRegion):
+        if not self.refreshTimer.isActive():
+            return
+
         ret, frame = self.video.read()
         if ret:
             # set image to actual Windows

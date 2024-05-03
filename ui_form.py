@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QPushButton,
-    QRadioButton, QSizePolicy, QSlider, QVBoxLayout,
-    QWidget)
+    QRadioButton, QSizePolicy, QSlider, QSpinBox,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -26,7 +26,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(1280, 720)
         self.widget_2 = QWidget(MainWindow)
         self.widget_2.setObjectName(u"widget_2")
-        self.widget_2.setGeometry(QRect(1020, 0, 156, 181))
+        self.widget_2.setGeometry(QRect(1020, 0, 221, 251))
         self.verticalLayout_2 = QVBoxLayout(self.widget_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.convertGrayScale = QRadioButton(self.widget_2)
@@ -70,10 +70,50 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
-        self.radioButton = QRadioButton(self.widget_2)
-        self.radioButton.setObjectName(u"radioButton")
+        self.cropButton = QRadioButton(self.widget_2)
+        self.cropButton.setObjectName(u"cropButton")
 
-        self.verticalLayout_2.addWidget(self.radioButton)
+        self.verticalLayout_2.addWidget(self.cropButton)
+
+        self.pointSelect1 = QHBoxLayout()
+        self.pointSelect1.setObjectName(u"pointSelect1")
+        self.spinBox = QSpinBox(self.widget_2)
+        self.spinBox.setObjectName(u"spinBox")
+
+        self.pointSelect1.addWidget(self.spinBox)
+
+        self.label_3 = QLabel(self.widget_2)
+        self.label_3.setObjectName(u"label_3")
+
+        self.pointSelect1.addWidget(self.label_3)
+
+        self.spinBox_2 = QSpinBox(self.widget_2)
+        self.spinBox_2.setObjectName(u"spinBox_2")
+
+        self.pointSelect1.addWidget(self.spinBox_2)
+
+
+        self.verticalLayout_2.addLayout(self.pointSelect1)
+
+        self.pointSelect2 = QHBoxLayout()
+        self.pointSelect2.setObjectName(u"pointSelect2")
+        self.spinBox_3 = QSpinBox(self.widget_2)
+        self.spinBox_3.setObjectName(u"spinBox_3")
+
+        self.pointSelect2.addWidget(self.spinBox_3)
+
+        self.label_4 = QLabel(self.widget_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.pointSelect2.addWidget(self.label_4)
+
+        self.spinBox_4 = QSpinBox(self.widget_2)
+        self.spinBox_4.setObjectName(u"spinBox_4")
+
+        self.pointSelect2.addWidget(self.spinBox_4)
+
+
+        self.verticalLayout_2.addLayout(self.pointSelect2)
 
         self.videoFrame = QLabel(MainWindow)
         self.videoFrame.setObjectName(u"videoFrame")
@@ -101,7 +141,7 @@ class Ui_MainWindow(object):
 
         self.previewWindow = QLabel(MainWindow)
         self.previewWindow.setObjectName(u"previewWindow")
-        self.previewWindow.setGeometry(QRect(1020, 390, 251, 191))
+        self.previewWindow.setGeometry(QRect(1020, 390, 251, 181))
         self.previewWindowText = QLabel(MainWindow)
         self.previewWindowText.setObjectName(u"previewWindowText")
         self.previewWindowText.setGeometry(QRect(1020, 360, 121, 16))
@@ -118,7 +158,9 @@ class Ui_MainWindow(object):
         self.showContours.setText(QCoreApplication.translate("MainWindow", u"Show Contours", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Threshold", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"N/A", None))
-        self.radioButton.setText(QCoreApplication.translate("MainWindow", u"resize", None))
+        self.cropButton.setText(QCoreApplication.translate("MainWindow", u"Crop", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Point 1 (x1, y1)", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Point 2 (x1, y1)", None))
         self.videoFrame.setText("")
         self.loadVideo.setText(QCoreApplication.translate("MainWindow", u"Load Video", None))
         self.exportVideo.setText(QCoreApplication.translate("MainWindow", u"Export Data", None))

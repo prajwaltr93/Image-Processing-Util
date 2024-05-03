@@ -18,8 +18,8 @@
     <rect>
      <x>1020</x>
      <y>0</y>
-     <width>156</width>
-     <height>181</height>
+     <width>221</width>
+     <height>251</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -74,11 +74,45 @@
      </layout>
     </item>
     <item>
-     <widget class="QRadioButton" name="radioButton">
+     <widget class="QRadioButton" name="cropButton">
       <property name="text">
-       <string>resize</string>
+       <string>Crop</string>
       </property>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="pointSelect1">
+      <item>
+       <widget class="QSpinBox" name="spinBox"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Point 1 (x1, y1)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBox_2"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="pointSelect2">
+      <item>
+       <widget class="QSpinBox" name="spinBox_3"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Point 2 (x1, y1)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBox_4"/>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -134,7 +168,7 @@
      <x>1020</x>
      <y>390</y>
      <width>251</width>
-     <height>191</height>
+     <height>181</height>
     </rect>
    </property>
    <property name="text">

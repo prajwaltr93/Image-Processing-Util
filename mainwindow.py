@@ -25,9 +25,18 @@ class MainWindow(QWidget):
         self.fileName = None
         self.currentFrame = None
         self.grayScale = False
+        self.cropVisible = False
+
         previewPen = QPen(QColor("green"))
         previewPen.setWidth(20)
         self.previewPen = previewPen
+
+        # hide crop selectors
+        for child in reversed(range(self.ui.pointSelect1.count())):
+            self.ui.pointSelect1.itemAt(child).widget().hide()
+
+        for child in reversed(range(self.ui.pointSelect2.count())):
+            self.ui.pointSelect2.itemAt(child).widget().hide()
 
         self.cropWindow = QRect(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height())
 
@@ -52,12 +61,52 @@ class MainWindow(QWidget):
 
         self.videoFrame.mouseMoveEvent = self.dragStop
 
+        self.ui.cropButton.clicked.connect(self.startCropping)
+
         self.dragStart = None
         self.dragStop = None
 
+        self.moveStart = None
+        self.moveStop = None
+
+        self.prevDx, self.prevDy = (0, 0)
+
+
+    def startCropping(self):
+        if self.cropVisible:
+            # hide crop selectors
+            for child in reversed(range(self.ui.pointSelect1.count())):
+                self.ui.pointSelect1.itemAt(child).widget().hide()
+            for child in reversed(range(self.ui.pointSelect2.count())):
+                self.ui.pointSelect2.itemAt(child).widget().hide()
+            self.cropVisible = False
+        else:
+            # show crop selectors
+            for child in reversed(range(self.ui.pointSelect1.count())):
+                self.ui.pointSelect1.itemAt(child).widget().show()
+            for child in reversed(range(self.ui.pointSelect2.count())):
+                self.ui.pointSelect2.itemAt(child).widget().show()
+            self.cropVisible = True
+
+
     def dragStart(self, event):
         if event.button() == Qt.RightButton:
+            # if self.dragStart is not None and self.dragStop is not None:
+            #     self.dragStart = None
+            #     self.dragStop = None
             self.dragStart = event.pos()
+            # if self.dragStart is None:
+            #     self.dragStart = event.pos()
+            # else:
+            #     self.dragStop = event.pos()
+
+        if event.button() == Qt.LeftButton:
+            if self.moveStart is not None and self.moveEnd is not None:
+                self.moveStart, self.moveEnd = (None, None)
+            if self.moveStart is None:
+                self.moveStart = event.pos()
+            else:
+                self.moveStop = event.pos()
 
     def dragStop(self, event):
         if event.button() == Qt.MouseButton.NoButton:
@@ -87,6 +136,7 @@ class MainWindow(QWidget):
             return
 
         print(self.dragStart, self.dragStop)
+        # print(self.moveStart, self.moveStop)
 
         ret, frame = self.video.read()
         if ret:
@@ -101,7 +151,13 @@ class MainWindow(QWidget):
             # viewPainter.begin(self.ui.videoFrame)
             # viewPainter.drawPixmap(QPoint(0, 0), pixmap)
             # viewPainter.end()
-            self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height()))
+            if self.dragStart is None or self.dragStop is None:
+                self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height()))
+            else:
+                dx, dy = (self.dragStart.x() - self.dragStop.x(), self.dragStart.y() - self.dragStop.y())
+
+                self.prevDx, self.prevDy = (self.prevDx + dx, self.prevDy + dy)
+                self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.prevDx, 0 + self.prevDy, self.ui.videoFrame.width() + self.prevDx, self.ui.videoFrame.height() + self.prevDy))
 
             # resize drawn image and show
             # if pixmap.height() > self.previewWindow.height() or pixmap.width() > self.previewWindow.width():
@@ -116,7 +172,8 @@ class MainWindow(QWidget):
             previewPainter.begin(copyCurrentFrame)
             previewPainter.setPen(self.previewPen)
             previewPainter.drawRect(self.cropWindow)
-            # previewPainter.drawRect(0, 0, 200, 200)
+            if self.dragStart and self.dragStop:
+                previewPainter.drawLine(self.dragStart, self.dragStop)
             previewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())

@@ -59,7 +59,9 @@ class MainWindow(QWidget):
 
         self.videoFrame.mousePressEvent = self.dragStart
 
-        self.videoFrame.mouseMoveEvent = self.dragStop
+        self.videoFrame.mouseMoveEvent = self.dragContinue
+
+        self.videoFrame.mouseReleaseEvent = self.dragStop
 
         self.ui.cropButton.clicked.connect(self.startCropping)
 
@@ -99,6 +101,8 @@ class MainWindow(QWidget):
             #     self.dragStart = event.pos()
             # else:
             #     self.dragStop = event.pos()
+        if event.button() == Qt.MouseButton.NoButton:
+            print('hello')
 
         if event.button() == Qt.LeftButton:
             if self.moveStart is not None and self.moveEnd is not None:
@@ -108,9 +112,14 @@ class MainWindow(QWidget):
             else:
                 self.moveStop = event.pos()
 
-    def dragStop(self, event):
-        if event.button() == Qt.MouseButton.NoButton:
+    def dragContinue(self, event):
+        if event.buttons() & Qt.MouseButton.RightButton:
             self.dragStop = event.pos()
+
+    def dragStop(self, event):
+        if event.buttons() == Qt.MouseButton.NoButton:
+            print('hello')
+            self.prevDx, self.prevDy = (self.prevDx + self.dx, self.prevDy + self.dy)
 
     def playPause(self):
         if self.fileName is None:
@@ -154,10 +163,11 @@ class MainWindow(QWidget):
             if self.dragStart is None or self.dragStop is None:
                 self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height()))
             else:
-                dx, dy = (self.dragStart.x() - self.dragStop.x(), self.dragStart.y() - self.dragStop.y())
+                self.dx, self.dy = (self.dragStart.x() - self.dragStop.x(), self.dragStart.y() - self.dragStop.y())
 
-                self.prevDx, self.prevDy = (self.prevDx + dx, self.prevDy + dy)
-                self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.prevDx, 0 + self.prevDy, self.ui.videoFrame.width() + self.prevDx, self.ui.videoFrame.height() + self.prevDy))
+                # self.prevDx, self.prevDy = (self.prevDx + dx, self.prevDy + dy)
+                # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.prevDx, 0 + self.prevDy, self.ui.videoFrame.width() + self.prevDx, self.ui.videoFrame.height() + self.prevDy))
+                self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx + self.prevDx, 0 + self.dy + self.prevDy, self.ui.videoFrame.width() + self.dx + self.prevDx, self.ui.videoFrame.height() + self.dy + self.prevDy))
 
             # resize drawn image and show
             # if pixmap.height() > self.previewWindow.height() or pixmap.width() > self.previewWindow.width():

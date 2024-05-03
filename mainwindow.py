@@ -4,7 +4,8 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLabel
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 # from PySide6.QtMultimedia import QMediaPlayer
-from PySide6.QtCore import QTimer, QRect, QPoint
+from PySide6.QtCore import QTimer, QRect, QPoint, Qt
+
 from copy import deepcopy
 import cv2
 
@@ -45,6 +46,22 @@ class MainWindow(QWidget):
 
         self.previewWindow = self.ui.previewWindow
 
+        self.videoFrame = self.ui.videoFrame
+
+        self.videoFrame.mousePressEvent = self.dragStart
+
+        self.videoFrame.mouseMoveEvent = self.dragStop
+
+        self.dragStart = None
+        self.dragStop = None
+
+    def dragStart(self, event):
+        if event.button() == Qt.RightButton:
+            self.dragStart = event.pos()
+
+    def dragStop(self, event):
+        if event.button() == Qt.MouseButton.NoButton:
+            self.dragStop = event.pos()
 
     def playPause(self):
         if self.fileName is None:
@@ -68,6 +85,8 @@ class MainWindow(QWidget):
     def paintEvent(self, paintRegion):
         if not self.refreshTimer.isActive():
             return
+
+        print(self.dragStart, self.dragStop)
 
         ret, frame = self.video.read()
         if ret:

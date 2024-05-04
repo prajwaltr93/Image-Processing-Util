@@ -57,11 +57,11 @@ class MainWindow(QWidget):
 
         self.videoFrame = self.ui.videoFrame
 
-        self.videoFrame.mousePressEvent = self.dragStart
+        self.videoFrame.mousePressEvent = self.dragStartCallBack
 
-        self.videoFrame.mouseMoveEvent = self.dragContinue
+        self.videoFrame.mouseMoveEvent = self.dragContinueCallBack
 
-        self.videoFrame.mouseReleaseEvent = self.dragStop
+        self.videoFrame.mouseReleaseEvent = self.dragStopCallBack
 
         # setup up signals and slots
         self.ui.loadVideo.clicked.connect(self.openVideo)
@@ -90,41 +90,31 @@ class MainWindow(QWidget):
             self.cropVisible = True
 
 
-    def dragStart(self, event):
+    def dragStartCallBack(self, event):
         if event.button() == Qt.RightButton:
-            # if self.dragStart is not None and self.dragStop is not None:
-            #     self.dragStart = None
-            #     self.dragStop = None
             self.dragStart = event.pos()
-            # if self.dragStart is None:
-            #     self.dragStart = event.pos()
-            # else:
-            #     self.dragStop = event.pos()
+        # if event.button() == Qt.LeftButton:
+        #     if self.ui.cropButton.isChecked():
+        #         if self.moveStart is not None and self.moveStop is not None:
+        #             self.moveStart, self.moveEnd = (None, None)
+        #         if self.moveStart is None:
+        #             # update manual point selecter
+        #             self.moveStart = event.pos()
+        #             self.ui.pointSelect1X.setValue(self.moveStart.x())
+        #             self.ui.pointSelect1Y.setValue(self.moveStart.y())
+        #         else:
+        #             # update manual point selecter
+        #             self.moveStop = event.pos()
+        #             self.ui.pointSelect2X.setValue(self.moveStop.x())
+        #             self.ui.pointSelect2Y.setValue(self.moveStop.y())
 
-        if event.button() == Qt.LeftButton:
-            if self.ui.cropButton.isChecked():
-                if self.moveStart is not None and self.moveStop is not None:
-                    self.moveStart, self.moveEnd = (None, None)
-                if self.moveStart is None:
-                    # update manual point selecter
-                    self.moveStart = event.pos()
-                    self.ui.pointSelect1X.setValue(self.moveStart.x())
-                    self.ui.pointSelect1Y.setValue(self.moveStart.y())
-                else:
-                    # update manual point selecter
-                    self.moveStop = event.pos()
-                    self.ui.pointSelect2X.setValue(self.moveStop.x())
-                    self.ui.pointSelect2Y.setValue(self.moveStop.y())
+    def dragContinueCallBack(self, event):
+        # if event.buttons() & Qt.MouseButton.RightButton:
+        #     self.dragStop = event.pos()
+        self.dragStop = event.pos()
 
-    def dragContinue(self, event):
-        if event.buttons() & Qt.MouseButton.RightButton:
-            self.dragStop = event.pos()
-
-    def dragStop(self, event):
-        # if event.buttons() == Qt.MouseButton.NoButton:
-        #     print('hello')
-        #     self.prevDx, self.prevDy = (self.prevDx + self.dx, self.prevDy + self.dy)
-        pass
+    def dragStopCallBack(self, event):
+        self.dragStop = event.pos()
 
     def playPause(self):
         if self.fileName is None:
@@ -158,8 +148,8 @@ class MainWindow(QWidget):
         if not self.refreshTimer.isActive():
             return
 
-        # print(self.dragStart, self.dragStop)
-        print(self.moveStart, self.moveStop)
+        print(self.dragStart, self.dragStop)
+        # print(self.moveStart, self.moveStop)
 
         ret, frame = self.video.read()
         if ret:

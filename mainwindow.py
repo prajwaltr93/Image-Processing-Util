@@ -4,7 +4,6 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLabel
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt
-from PreviewWindow import PreviewWindow
 import cv2
 
 # Important:
@@ -170,25 +169,22 @@ class MainWindow(QWidget):
 
             # set Image to video Frame
             diffPoint = self.dragStart - self.dragStop
-                # self.prevDx, self.prevDy = (self.prevDx + dx, self.prevDy + dy)
-                # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.prevDx, 0 + self.prevDy, self.ui.videoFrame.width() + self.prevDx, self.ui.videoFrame.height() + self.prevDy))
-                # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx + self.prevDx, 0 + self.dy + self.prevDy, self.ui.videoFrame.width() + self.dx + self.prevDx, self.ui.videoFrame.height() + self.dy + self.prevDy))
-            # self.ui.videoFrame.setPixmap(pixmap.copy(0 + diffPoint.x(), 0 + diffPoint.y(), self.ui.videoFrame.width() + diffPoint.x(), self.ui.videoFrame.height() + diffPoint.y()))
-            self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(diffPoint)))
 
-            # resize drawn image and show
-            # if pixmap.height() > self.previewWindow.height() or pixmap.width() > self.previewWindow.width():
-            #     scaledPixmap = pixmap.scaled(self.previewWindow.width(), self.previewWindow.height())
-            #     self.previewWindow.setPixmap(scaledPixmap)
+            self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(diffPoint)))
+            # this is slow, TODO: why ?, anchors the image to top left
+            # videoFramePainter = QPainter()
+            # videoFramePainter.begin(self)
+            # videoFramePainter.drawPixmap(QPoint(0, 0), pixmap.copy(self.videoFrameCropWindow.translated(diffPoint)))
+            # videoFramePainter.end()
 
             # Preview Window
             newCropWindowMarker = QRect(self.videoFrameCropWindow)
             newCropWindowMarker.translate(diffPoint)
 
+            # get a copy of the current frame, so that it can be scaled and shown in preview window
             copyCurrentFrame = pixmap.copy(QRect())
 
             # draw a green rectangle on a copy of image shown in preview image
-            # make a copy of current frame
             previewPainter = QPainter()
             previewPainter.begin(copyCurrentFrame)
             previewPainter.setPen(self.previewPen)
@@ -216,18 +212,10 @@ class MainWindow(QWidget):
 
     def updateFrame(self):
         pass
-
-            # print(frame) print(frame.shape)
-            # height, width, channel = frame.shape
-            # self.currentFrameNonGrayScale = frame
             # if self.grayScale:
             #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             # pixmap = QPixmap(QImage(frame.data, width, height, width, QImage.Format_Grayscale8))
-            # if pixmap.height() > self.ui.videoFrame.height() or pixmap.width() > self.ui.videoFrame.width():
-            #     pixmap = pixmap.scaled(self.ui.videoFrame.width(), self.ui.videoFrame.height())
 
-            # self.currentFrame = pixmap
-            # self.ui.videoFrame.setPixmap(pixmap)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

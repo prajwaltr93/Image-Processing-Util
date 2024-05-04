@@ -12,6 +12,13 @@ import cv2
 #     pyside2-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
 
+
+def checkNullPoint(point):
+    if point.x() == 0 and point.y() == 0:
+        return True
+    else:
+        return False
+
 class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -27,8 +34,8 @@ class MainWindow(QWidget):
         self.dragStart = QPoint()
         self.dragStop = QPoint()
 
-        self.moveStart = None
-        self.moveStop = None
+        self.moveStart = QPoint()
+        self.moveStop = QPoint()
 
         self.diffPoint = None
 
@@ -93,28 +100,32 @@ class MainWindow(QWidget):
     def dragStartCallBack(self, event):
         if event.button() == Qt.RightButton:
             self.dragStart = event.pos()
-        # if event.button() == Qt.LeftButton:
-        #     if self.ui.cropButton.isChecked():
-        #         if self.moveStart is not None and self.moveStop is not None:
-        #             self.moveStart, self.moveEnd = (None, None)
-        #         if self.moveStart is None:
-        #             # update manual point selecter
-        #             self.moveStart = event.pos()
-        #             self.ui.pointSelect1X.setValue(self.moveStart.x())
-        #             self.ui.pointSelect1Y.setValue(self.moveStart.y())
-        #         else:
-        #             # update manual point selecter
-        #             self.moveStop = event.pos()
-        #             self.ui.pointSelect2X.setValue(self.moveStop.x())
-        #             self.ui.pointSelect2Y.setValue(self.moveStop.y())
+        if event.button() == Qt.LeftButton:
+            if self.ui.cropButton.isChecked():
+                if checkNullPoint(self.moveStart):
+                    # update manual point selecter
+                    self.moveStart = event.pos()
+                    self.ui.pointSelect1X.setValue(self.moveStart.x())
+                    self.ui.pointSelect1Y.setValue(self.moveStart.y())
+                else:
+                    # update manual point selecter
+                    self.moveStop = event.pos()
+                    self.ui.pointSelect2X.setValue(self.moveStop.x())
+                    self.ui.pointSelect2Y.setValue(self.moveStop.y())
 
     def dragContinueCallBack(self, event):
-        # if event.buttons() & Qt.MouseButton.RightButton:
-        #     self.dragStop = event.pos()
-        self.dragStop = event.pos()
+        if event.buttons() & Qt.MouseButton.RightButton:
+            self.dragStop = event.pos()
+        # else:
+        # if event.buttons() & Qt.MouseButton.LeftButton:
+        #     # hovering after selecting start crop point
+        #     self.moveEnd = event.pos()
 
     def dragStopCallBack(self, event):
-        self.dragStop = event.pos()
+        if event.button() == Qt.MouseButton.RightButton:
+            self.dragStop = event.pos()
+        # if event.button() == Qt.MouseButton.LeftButton:
+        #     self.moveEnd = event.pos()
 
     def playPause(self):
         if self.fileName is None:
@@ -148,8 +159,8 @@ class MainWindow(QWidget):
         if not self.refreshTimer.isActive():
             return
 
-        print(self.dragStart, self.dragStop)
-        # print(self.moveStart, self.moveStop)
+        # print(self.dragStart, self.dragStop)
+        print(self.moveStart, self.moveStop)
 
         ret, frame = self.video.read()
         if ret:

@@ -3,10 +3,8 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLabel
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
-# from PySide6.QtMultimedia import QMediaPlayer
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt
-
-from copy import deepcopy
+from PreviewWindow import PreviewWindow
 import cv2
 
 # Important:
@@ -27,6 +25,14 @@ class MainWindow(QWidget):
         self.grayScale = False
         self.cropVisible = False
 
+        self.dragStart = QPoint()
+        self.dragStop = QPoint()
+
+        self.moveStart = None
+        self.moveStop = None
+
+        self.diffPoint = None
+
         previewPen = QPen(QColor("green"))
         previewPen.setWidth(10)
         self.previewPen = previewPen
@@ -35,6 +41,8 @@ class MainWindow(QWidget):
         cropPreviewPen.setWidth(10)
         self.cropPreviewPen = cropPreviewPen
 
+        self.videoFrameCropWindow = QRect(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height())
+
         # hide crop selectors
         for child in reversed(range(self.ui.pointSelect1.count())):
             self.ui.pointSelect1.itemAt(child).widget().hide()
@@ -42,20 +50,9 @@ class MainWindow(QWidget):
         for child in reversed(range(self.ui.pointSelect2.count())):
             self.ui.pointSelect2.itemAt(child).widget().hide()
 
-        self.cropWindow = QRect(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height())
-
-        self.ui.loadVideo.clicked.connect(self.openVideo)
-
-        self.ui.convertGrayScale.clicked.connect(self.convertToGrayScale)
-
-        # self.mediaPlayer = QMediaPlayer(None)
-
-        self.refreshTimer = QTimer(self)
-        self.refreshTimer.timeout.connect(self.update)
 
         self.playPauseButton = self.ui.playPause
 
-        self.ui.playPause.clicked.connect(self.playPause)
 
         self.previewWindow = self.ui.previewWindow
 
@@ -67,17 +64,15 @@ class MainWindow(QWidget):
 
         self.videoFrame.mouseReleaseEvent = self.dragStop
 
+        # setup up signals and slots
+        self.ui.loadVideo.clicked.connect(self.openVideo)
+        # self.ui.convertGrayScale.clicked.connect(self.convertToGrayScale)
         self.ui.cropButton.clicked.connect(self.startCropping)
+        self.ui.playPause.clicked.connect(self.playPause)
 
-        self.dragStart = None
-        self.dragStop = None
-
-        self.moveStart = None
-        self.moveStop = None
-
-        # self.prevDx, self.prevDy = (0, 0)
-
-        self.dx, self.dy = (0, 0)
+        # setup refreshRate of all windows
+        self.refreshTimer = QTimer(self)
+        self.refreshTimer.timeout.connect(self.update)
 
     def startCropping(self):
         if self.cropVisible:
@@ -170,57 +165,52 @@ class MainWindow(QWidget):
         ret, frame = self.video.read()
         if ret:
             # set image to actual Windows
-            # viewPainter = QPainter()
-
             height, width, channel = frame.shape
             pixmap = QPixmap(QImage(frame.data, width, height, 3 * width, QImage.Format_RGB888))
-            # retain a copy just in case, hope original isn't modified
-            self.currentFrame = pixmap
 
-            # viewPainter.begin(self.ui.videoFrame)
-            # viewPainter.drawPixmap(QPoint(0, 0), pixmap)
-            # viewPainter.end()
-            if self.dragStart is None or self.dragStop is None:
-                self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height()))
-            else:
-                self.dx, self.dy = (self.dragStart.x() - self.dragStop.x(), self.dragStart.y() - self.dragStop.y())
-
+            # set Image to video Frame
+            diffPoint = self.dragStart - self.dragStop
                 # self.prevDx, self.prevDy = (self.prevDx + dx, self.prevDy + dy)
                 # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.prevDx, 0 + self.prevDy, self.ui.videoFrame.width() + self.prevDx, self.ui.videoFrame.height() + self.prevDy))
                 # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx + self.prevDx, 0 + self.dy + self.prevDy, self.ui.videoFrame.width() + self.dx + self.prevDx, self.ui.videoFrame.height() + self.dy + self.prevDy))
-                self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx, 0 + self.dy, self.ui.videoFrame.width() + self.dx, self.ui.videoFrame.height() + self.dy))
+            # self.ui.videoFrame.setPixmap(pixmap.copy(0 + diffPoint.x(), 0 + diffPoint.y(), self.ui.videoFrame.width() + diffPoint.x(), self.ui.videoFrame.height() + diffPoint.y()))
+            self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(diffPoint)))
 
             # resize drawn image and show
             # if pixmap.height() > self.previewWindow.height() or pixmap.width() > self.previewWindow.width():
             #     scaledPixmap = pixmap.scaled(self.previewWindow.width(), self.previewWindow.height())
             #     self.previewWindow.setPixmap(scaledPixmap)
 
-        # draw a green rectangle on a copy of image shown to preview image
-        # make a copy of current frame
-        if self.currentFrame is not None:
-            newCropWindow = QRect(self.cropWindow)
-            newCropWindow.translate(self.dx, self.dy)
+            # Preview Window
+            newCropWindowMarker = QRect(self.videoFrameCropWindow)
+            newCropWindowMarker.translate(diffPoint)
 
-            copyCurrentFrame = self.currentFrame.copy(0, 0, self.currentFrame.width(), self.currentFrame.height())
+            copyCurrentFrame = pixmap.copy(QRect())
+
+            # draw a green rectangle on a copy of image shown in preview image
+            # make a copy of current frame
             previewPainter = QPainter()
             previewPainter.begin(copyCurrentFrame)
             previewPainter.setPen(self.previewPen)
-            previewPainter.drawRect(newCropWindow)
+            previewPainter.drawRect(newCropWindowMarker)
+
+            # show the drag line
             if self.dragStart and self.dragStop:
                 previewPainter.drawLine(self.dragStart, self.dragStop)
+
             previewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())
 
             # draw crop rectangle
-            if self.ui.cropButton.isChecked():
-                    if self.moveStart is not None and self.moveStop is not None:
-                        cropPreviewPainter = QPainter()
-                        cropPreviewPainter.begin(copyCurrentFrame)
-                        cropPreviewPainter.setPen(self.cropPreviewPen)
-                        # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
-                        cropPreviewPainter.drawRect(0, 0, 100, 100)
-                        cropPreviewPainter.end()
+            # if self.ui.cropButton.isChecked():
+            #         if self.moveStart is not None and self.moveStop is not None:
+            #             cropPreviewPainter = QPainter()
+            #             cropPreviewPainter.begin(copyCurrentFrame)
+            #             cropPreviewPainter.setPen(self.cropPreviewPen)
+            #             # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
+            #             cropPreviewPainter.drawRect(0, 0, 100, 100)
+            #             cropPreviewPainter.end()
             self.previewWindow.setPixmap(copyCurrentFrame)
         return
 
@@ -238,14 +228,6 @@ class MainWindow(QWidget):
 
             # self.currentFrame = pixmap
             # self.ui.videoFrame.setPixmap(pixmap)
-
-
-    def convertToGrayScale(self):
-        if not self.grayScale:
-            self.grayScale = True
-        else:
-            return
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

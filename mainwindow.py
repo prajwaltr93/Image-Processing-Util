@@ -28,8 +28,12 @@ class MainWindow(QWidget):
         self.cropVisible = False
 
         previewPen = QPen(QColor("green"))
-        previewPen.setWidth(20)
+        previewPen.setWidth(10)
         self.previewPen = previewPen
+
+        cropPreviewPen = QPen(QColor("red"))
+        cropPreviewPen.setWidth(10)
+        self.cropPreviewPen = cropPreviewPen
 
         # hide crop selectors
         for child in reversed(range(self.ui.pointSelect1.count())):
@@ -71,8 +75,9 @@ class MainWindow(QWidget):
         self.moveStart = None
         self.moveStop = None
 
-        self.prevDx, self.prevDy = (0, 0)
+        # self.prevDx, self.prevDy = (0, 0)
 
+        self.dx, self.dy = (0, 0)
 
     def startCropping(self):
         if self.cropVisible:
@@ -103,12 +108,19 @@ class MainWindow(QWidget):
             #     self.dragStop = event.pos()
 
         if event.button() == Qt.LeftButton:
-            if self.moveStart is not None and self.moveStop is not None:
-                self.moveStart, self.moveEnd = (None, None)
-            if self.moveStart is None:
-                self.moveStart = event.pos()
-            else:
-                self.moveStop = event.pos()
+            if self.ui.cropButton.isChecked():
+                if self.moveStart is not None and self.moveStop is not None:
+                    self.moveStart, self.moveEnd = (None, None)
+                if self.moveStart is None:
+                    # update manual point selecter
+                    self.moveStart = event.pos()
+                    self.ui.pointSelect1X.setValue(self.moveStart.x())
+                    self.ui.pointSelect1Y.setValue(self.moveStart.y())
+                else:
+                    # update manual point selecter
+                    self.moveStop = event.pos()
+                    self.ui.pointSelect2X.setValue(self.moveStop.x())
+                    self.ui.pointSelect2Y.setValue(self.moveStop.y())
 
     def dragContinue(self, event):
         if event.buttons() & Qt.MouseButton.RightButton:
@@ -136,6 +148,15 @@ class MainWindow(QWidget):
         self.fileName = "D:\\point detection algorithm implementation-python\\750.mp4"
         if self.fileName != '':
             self.video = cv2.VideoCapture(self.fileName)
+            frame_width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+            self.ui.pointSelect1X.setMaximum(frame_width)
+            self.ui.pointSelect2X.setMaximum(frame_width)
+
+            self.ui.pointSelect1Y.setMaximum(frame_height)
+            self.ui.pointSelect2Y.setMaximum(frame_height)
+
             self.playPauseButton.setText("Pause")
             self.refreshTimer.start(1000)
 
@@ -143,8 +164,8 @@ class MainWindow(QWidget):
         if not self.refreshTimer.isActive():
             return
 
-        print(self.dragStart, self.dragStop)
-        # print(self.moveStart, self.moveStop)
+        # print(self.dragStart, self.dragStop)
+        print(self.moveStart, self.moveStop)
 
         ret, frame = self.video.read()
         if ret:
@@ -190,6 +211,16 @@ class MainWindow(QWidget):
             previewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())
+
+            # draw crop rectangle
+            if self.ui.cropButton.isChecked():
+                    if self.moveStart is not None and self.moveStop is not None:
+                        cropPreviewPainter = QPainter()
+                        cropPreviewPainter.begin(copyCurrentFrame)
+                        cropPreviewPainter.setPen(self.cropPreviewPen)
+                        # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
+                        cropPreviewPainter.drawRect(0, 0, 100, 100)
+                        cropPreviewPainter.end()
             self.previewWindow.setPixmap(copyCurrentFrame)
         return
 

@@ -13,116 +13,13 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="widget_2" native="true">
-   <property name="geometry">
-    <rect>
-     <x>1020</x>
-     <y>0</y>
-     <width>221</width>
-     <height>251</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QRadioButton" name="convertGrayScale">
-      <property name="text">
-       <string>Convert to Gray Scale</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="skeletonize">
-      <property name="text">
-       <string>Skeletonize</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="showContours">
-      <property name="text">
-       <string>Show Contours</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Threshold</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>N/A</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QSlider" name="horizontalSlider">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="cropButton">
-      <property name="text">
-       <string>Crop</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="pointSelect1">
-      <item>
-       <widget class="QSpinBox" name="spinBox"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Point 1 (x1, y1)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="spinBox_2"/>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="pointSelect2">
-      <item>
-       <widget class="QSpinBox" name="spinBox_3"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Point 2 (x1, y1)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="spinBox_4"/>
-      </item>
-     </layout>
-    </item>
-   </layout>
-  </widget>
   <widget class="QLabel" name="videoFrame">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>0</y>
-     <width>1000</width>
-     <height>650</height>
+     <width>1011</width>
+     <height>711</height>
     </rect>
    </property>
    <property name="text">
@@ -132,61 +29,201 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1020</x>
-     <y>280</y>
-     <width>254</width>
-     <height>26</height>
+     <x>1030</x>
+     <y>0</y>
+     <width>256</width>
+     <height>711</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
-     <widget class="QPushButton" name="loadVideo">
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QRadioButton" name="convertGrayScale">
+         <property name="text">
+          <string>Convert to Gray Scale</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="skeletonize">
+         <property name="text">
+          <string>Skeletonize</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="showContours">
+         <property name="text">
+          <string>Show Contours</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Threshold</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSlider" name="horizontalSlider">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="cropButton">
+         <property name="text">
+          <string>Crop</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="pointSelect1">
+         <item>
+          <widget class="QSpinBox" name="pointSelect1X"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Point 1 (x1, y1)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="pointSelect1Y"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="pointSelect2">
+         <item>
+          <widget class="QSpinBox" name="pointSelect2X"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Point 2 (x1, y1)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="pointSelect2Y"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="loadVideo">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Load Video</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="exportVideo">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Export Data</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="playPause">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Play</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="previewWindowText">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>50</height>
+       </size>
+      </property>
       <property name="text">
-       <string>Load Video</string>
+       <string>Preview Window</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="exportVideo">
-      <property name="text">
-       <string>Export Data</string>
+     <widget class="QLabel" name="previewWindow">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>400</height>
+       </size>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="playPause">
       <property name="text">
-       <string>Play</string>
+       <string/>
       </property>
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QLabel" name="previewWindow">
-   <property name="geometry">
-    <rect>
-     <x>1020</x>
-     <y>390</y>
-     <width>251</width>
-     <height>181</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="previewWindowText">
-   <property name="geometry">
-    <rect>
-     <x>1020</x>
-     <y>360</y>
-     <width>121</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Preview Window</string>
-   </property>
   </widget>
  </widget>
  <resources/>

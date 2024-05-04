@@ -101,11 +101,9 @@ class MainWindow(QWidget):
             #     self.dragStart = event.pos()
             # else:
             #     self.dragStop = event.pos()
-        if event.button() == Qt.MouseButton.NoButton:
-            print('hello')
 
         if event.button() == Qt.LeftButton:
-            if self.moveStart is not None and self.moveEnd is not None:
+            if self.moveStart is not None and self.moveStop is not None:
                 self.moveStart, self.moveEnd = (None, None)
             if self.moveStart is None:
                 self.moveStart = event.pos()
@@ -117,9 +115,10 @@ class MainWindow(QWidget):
             self.dragStop = event.pos()
 
     def dragStop(self, event):
-        if event.buttons() == Qt.MouseButton.NoButton:
-            print('hello')
-            self.prevDx, self.prevDy = (self.prevDx + self.dx, self.prevDy + self.dy)
+        # if event.buttons() == Qt.MouseButton.NoButton:
+        #     print('hello')
+        #     self.prevDx, self.prevDy = (self.prevDx + self.dx, self.prevDy + self.dy)
+        pass
 
     def playPause(self):
         if self.fileName is None:
@@ -167,7 +166,8 @@ class MainWindow(QWidget):
 
                 # self.prevDx, self.prevDy = (self.prevDx + dx, self.prevDy + dy)
                 # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.prevDx, 0 + self.prevDy, self.ui.videoFrame.width() + self.prevDx, self.ui.videoFrame.height() + self.prevDy))
-                self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx + self.prevDx, 0 + self.dy + self.prevDy, self.ui.videoFrame.width() + self.dx + self.prevDx, self.ui.videoFrame.height() + self.dy + self.prevDy))
+                # self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx + self.prevDx, 0 + self.dy + self.prevDy, self.ui.videoFrame.width() + self.dx + self.prevDx, self.ui.videoFrame.height() + self.dy + self.prevDy))
+                self.ui.videoFrame.setPixmap(pixmap.copy(0 + self.dx, 0 + self.dy, self.ui.videoFrame.width() + self.dx, self.ui.videoFrame.height() + self.dy))
 
             # resize drawn image and show
             # if pixmap.height() > self.previewWindow.height() or pixmap.width() > self.previewWindow.width():
@@ -177,11 +177,14 @@ class MainWindow(QWidget):
         # draw a green rectangle on a copy of image shown to preview image
         # make a copy of current frame
         if self.currentFrame is not None:
+            newCropWindow = QRect(self.cropWindow)
+            newCropWindow.translate(self.dx, self.dy)
+
             copyCurrentFrame = self.currentFrame.copy(0, 0, self.currentFrame.width(), self.currentFrame.height())
             previewPainter = QPainter()
             previewPainter.begin(copyCurrentFrame)
             previewPainter.setPen(self.previewPen)
-            previewPainter.drawRect(self.cropWindow)
+            previewPainter.drawRect(newCropWindow)
             if self.dragStart and self.dragStop:
                 previewPainter.drawLine(self.dragStart, self.dragStop)
             previewPainter.end()

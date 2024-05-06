@@ -72,7 +72,7 @@ class MainWindow(QWidget):
 
         # setup up signals and slots
         self.ui.loadVideo.clicked.connect(self.openVideo)
-        # self.ui.convertGrayScale.clicked.connect(self.convertToGrayScale)
+        self.ui.convertGrayScale.clicked.connect(self.convertToGrayScale)
         self.ui.cropButton.clicked.connect(self.startCropping)
         self.ui.playPause.clicked.connect(self.playPause)
 
@@ -90,6 +90,9 @@ class MainWindow(QWidget):
         # setup refreshRate of all windows
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
+
+        # few more tweaks
+        # self.ui.Options.setExclusive(False)
 
     def confirmCrop(self):
         # TODO: add a dialog informing resize of videoFrame
@@ -224,7 +227,14 @@ class MainWindow(QWidget):
         if ret:
             # set image to actual Windows
             height, width, channel = frame.shape
-            pixmap = QPixmap(QImage(frame.data, width, height, 3 * width, QImage.Format_RGB888))
+
+            if self.grayScale:
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+                bits = width
+                pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
+            else:
+                bits = 3 * width
+                pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_RGB888))
 
             # set Image to video Frame
             self.diffPoint = self.dragStart - self.dragStop
@@ -244,7 +254,9 @@ class MainWindow(QWidget):
 
             # Preview Window
             newCropWindowMarker = QRect(self.videoFrameCropWindow)
-            newCropWindowMarker.translate(self.diffPoint)
+
+            if not checkNullPoint(self.diffPoint):
+                newCropWindowMarker.translate(self.diffPoint)
 
             # get a copy of the current frame, so that it can be scaled and shown in preview window
             copyCurrentFrame = pixmap.copy(QRect())
@@ -277,11 +289,10 @@ class MainWindow(QWidget):
             self.previewWindow.setPixmap(copyCurrentFrame)
         return
 
-    def updateFrame(self):
-        pass
-            # if self.grayScale:
-            #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # pixmap = QPixmap(QImage(frame.data, width, height, width, QImage.Format_Grayscale8))
+    def convertToGrayScale(self):
+        self.grayScale = not self.grayScale
+        #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # pixmap = QPixmap(QImage(frame.data, width, height, width, QImage.Format_Grayscale8))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLabel
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt
 import cv2
@@ -36,6 +36,14 @@ class MainWindow(QWidget):
         self.grayScale = False
         self.cropVisible = False
         self.cropConfirmed = False
+
+        # TODO: improve this hardcoded list
+        self.nonExclusiveButtonsList = [self.ui.convertGrayScale, self.ui.skeletonize, self.ui.showContours, self.ui.cropButton]
+
+        self.nonExclusiveButtonsBG = QButtonGroup(self)
+        for button in self.nonExclusiveButtonsList:
+            self.nonExclusiveButtonsBG.addButton(button)
+        self.nonExclusiveButtonsBG.setExclusive(False)
 
         self.dragStart = QPoint()
         self.dragStop = QPoint()

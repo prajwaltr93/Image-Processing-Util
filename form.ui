@@ -148,6 +148,20 @@
          </item>
         </layout>
        </item>
+       <item>
+        <widget class="QPushButton" name="confirmCrop">
+         <property name="text">
+          <string>Confirm Crop</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cancelCrop">
+         <property name="text">
+          <string>Cancel Crop</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

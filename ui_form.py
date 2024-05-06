@@ -126,6 +126,16 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.pointSelect2)
 
+        self.confirmCrop = QPushButton(self.widget_2)
+        self.confirmCrop.setObjectName(u"confirmCrop")
+
+        self.verticalLayout_2.addWidget(self.confirmCrop)
+
+        self.cancelCrop = QPushButton(self.widget_2)
+        self.cancelCrop.setObjectName(u"cancelCrop")
+
+        self.verticalLayout_2.addWidget(self.cancelCrop)
+
 
         self.verticalLayout_3.addWidget(self.widget_2)
 
@@ -182,6 +192,8 @@ class Ui_MainWindow(object):
         self.cropButton.setText(QCoreApplication.translate("MainWindow", u"Crop", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Point 1 (x1, y1)", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Point 2 (x1, y1)", None))
+        self.confirmCrop.setText(QCoreApplication.translate("MainWindow", u"Confirm Crop", None))
+        self.cancelCrop.setText(QCoreApplication.translate("MainWindow", u"Cancel Crop", None))
         self.loadVideo.setText(QCoreApplication.translate("MainWindow", u"Load Video", None))
         self.exportVideo.setText(QCoreApplication.translate("MainWindow", u"Export Data", None))
         self.playPause.setText(QCoreApplication.translate("MainWindow", u"Play", None))

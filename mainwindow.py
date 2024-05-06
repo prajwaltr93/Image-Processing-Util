@@ -49,13 +49,7 @@ class MainWindow(QWidget):
 
         self.videoFrameCropWindow = QRect(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height())
 
-        # hide crop selectors
-        for child in reversed(range(self.ui.pointSelect1.count())):
-            self.ui.pointSelect1.itemAt(child).widget().hide()
-
-        for child in reversed(range(self.ui.pointSelect2.count())):
-            self.ui.pointSelect2.itemAt(child).widget().hide()
-
+        self.hideCropGUIAttributes()
 
         self.playPauseButton = self.ui.playPause
 
@@ -76,24 +70,61 @@ class MainWindow(QWidget):
         self.ui.cropButton.clicked.connect(self.startCropping)
         self.ui.playPause.clicked.connect(self.playPause)
 
+        # connect crop point spin box
+        self.ui.pointSelect1X.valueChanged.connect(self.pointSelect1XValueChanged)
+        self.ui.pointSelect1Y.valueChanged.connect(self.pointSelect1YValueChanged)
+
+        self.ui.pointSelect2X.valueChanged.connect(self.pointSelect2XValueChanged)
+        self.ui.pointSelect2Y.valueChanged.connect(self.pointSelect2YValueChanged)
+
         # setup refreshRate of all windows
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
 
+    def pointSelect2XValueChanged(self, x):
+        self.moveStop.setX(x)
+
+    def pointSelect2YValueChanged(self, y):
+        self.moveStop.setY(y)
+
+    def pointSelect1XValueChanged(self, x):
+        self.moveStart.setX(x)
+
+    def pointSelect1YValueChanged(self, y):
+        self.moveStart.setY(y)
+
+
+    def hideCropGUIAttributes(self):
+        # hide crop selectors
+        for child in reversed(range(self.ui.pointSelect1.count())):
+            self.ui.pointSelect1.itemAt(child).widget().hide()
+
+        for child in reversed(range(self.ui.pointSelect2.count())):
+            self.ui.pointSelect2.itemAt(child).widget().hide()
+
+        # hide confirm and cancel crop
+        self.ui.cancelCrop.hide()
+        self.ui.confirmCrop.hide()
+
+    def showCropGUIAttributes(self):
+        # show crop selectors
+        for child in reversed(range(self.ui.pointSelect1.count())):
+            self.ui.pointSelect1.itemAt(child).widget().show()
+        for child in reversed(range(self.ui.pointSelect2.count())):
+            self.ui.pointSelect2.itemAt(child).widget().show()
+
+        # show confirm and cancel crop
+        self.ui.cancelCrop.show()
+        self.ui.confirmCrop.show()
+
+
     def startCropping(self):
         if self.cropVisible:
             # hide crop selectors
-            for child in reversed(range(self.ui.pointSelect1.count())):
-                self.ui.pointSelect1.itemAt(child).widget().hide()
-            for child in reversed(range(self.ui.pointSelect2.count())):
-                self.ui.pointSelect2.itemAt(child).widget().hide()
+            self.hideCropGUIAttributes()
             self.cropVisible = False
         else:
-            # show crop selectors
-            for child in reversed(range(self.ui.pointSelect1.count())):
-                self.ui.pointSelect1.itemAt(child).widget().show()
-            for child in reversed(range(self.ui.pointSelect2.count())):
-                self.ui.pointSelect2.itemAt(child).widget().show()
+            self.showCropGUIAttributes()
             self.cropVisible = True
 
 
@@ -194,8 +225,8 @@ class MainWindow(QWidget):
             previewPainter.drawRect(newCropWindowMarker)
 
             # show the drag line
-            if self.dragStart and self.dragStop:
-                previewPainter.drawLine(self.dragStart, self.dragStop)
+            # if self.dragStart and self.dragStop:
+            #     previewPainter.drawLine(self.dragStart, self.dragStop)
 
             previewPainter.end()
 
@@ -208,7 +239,6 @@ class MainWindow(QWidget):
                         cropPreviewPainter.setPen(self.cropPreviewPen)
                         # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
                         cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y())
-                        # cropPreviewPainter.drawRect(0, 0, 100, 100)
                         cropPreviewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())

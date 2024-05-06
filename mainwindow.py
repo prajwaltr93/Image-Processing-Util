@@ -108,8 +108,10 @@ class MainWindow(QWidget):
                     self.ui.pointSelect1X.setValue(self.moveStart.x())
                     self.ui.pointSelect1Y.setValue(self.moveStart.y())
                 else:
-                    # update manual point selecter
+                    # update manual point selecter,
                     self.moveStop = event.pos()
+                    # but account for dragged video frame, it would have moved self.dx and self.dy
+                    self.moveStop += (self.diffPoint - self.moveStart)
                     self.ui.pointSelect2X.setValue(self.moveStop.x())
                     self.ui.pointSelect2Y.setValue(self.moveStop.y())
 
@@ -169,9 +171,9 @@ class MainWindow(QWidget):
             pixmap = QPixmap(QImage(frame.data, width, height, 3 * width, QImage.Format_RGB888))
 
             # set Image to video Frame
-            diffPoint = self.dragStart - self.dragStop
+            self.diffPoint = self.dragStart - self.dragStop
 
-            self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(diffPoint)))
+            self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(self.diffPoint)))
             # this is slow, TODO: why ?, anchors the image to top left
             # videoFramePainter = QPainter()
             # videoFramePainter.begin(self)
@@ -180,7 +182,7 @@ class MainWindow(QWidget):
 
             # Preview Window
             newCropWindowMarker = QRect(self.videoFrameCropWindow)
-            newCropWindowMarker.translate(diffPoint)
+            newCropWindowMarker.translate(self.diffPoint)
 
             # get a copy of the current frame, so that it can be scaled and shown in preview window
             copyCurrentFrame = pixmap.copy(QRect())
@@ -197,17 +199,20 @@ class MainWindow(QWidget):
 
             previewPainter.end()
 
-            copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())
 
             # draw crop rectangle
-            # if self.ui.cropButton.isChecked():
-            #         if self.moveStart is not None and self.moveStop is not None:
-            #             cropPreviewPainter = QPainter()
-            #             cropPreviewPainter.begin(copyCurrentFrame)
-            #             cropPreviewPainter.setPen(self.cropPreviewPen)
-            #             # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
-            #             cropPreviewPainter.drawRect(0, 0, 100, 100)
-            #             cropPreviewPainter.end()
+            if self.ui.cropButton.isChecked():
+                    if not checkNullPoint(self.moveStart) and not checkNullPoint(self.moveStop):
+                        cropPreviewPainter = QPainter()
+                        cropPreviewPainter.begin(copyCurrentFrame)
+                        cropPreviewPainter.setPen(self.cropPreviewPen)
+                        # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
+                        cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y())
+                        # cropPreviewPainter.drawRect(0, 0, 100, 100)
+                        cropPreviewPainter.end()
+
+            copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())
+
             self.previewWindow.setPixmap(copyCurrentFrame)
         return
 

@@ -299,9 +299,6 @@ class MainWindow(QWidget):
 
     def convertToGrayScale(self):
         self.grayScale = not self.grayScale
-        #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # pixmap = QPixmap(QImage(frame.data, width, height, width, QImage.Format_Grayscale8))
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

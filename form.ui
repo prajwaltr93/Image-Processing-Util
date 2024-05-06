@@ -31,21 +31,14 @@
     <rect>
      <x>1030</x>
      <y>0</y>
-     <width>256</width>
-     <height>711</height>
+     <width>244</width>
+     <height>598</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
-     <widget class="QWidget" name="widget_2" native="true">
+     <widget class="QWidget" name="optionsWidget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QRadioButton" name="convertGrayScale">
-         <property name="text">
-          <string>Convert to Gray Scale</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QRadioButton" name="skeletonize">
          <property name="text">
@@ -57,6 +50,13 @@
         <widget class="QRadioButton" name="showContours">
          <property name="text">
           <string>Show Contours</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="convertGrayScale">
+         <property name="text">
+          <string>Convert to Gray Scale</string>
          </property>
         </widget>
        </item>
@@ -226,6 +226,12 @@
     </item>
     <item>
      <widget class="QLabel" name="previewWindow">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>200</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>

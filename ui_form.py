@@ -29,40 +29,40 @@ class Ui_MainWindow(object):
         self.videoFrame.setGeometry(QRect(10, 0, 1011, 711))
         self.layoutWidget = QWidget(MainWindow)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(1030, 0, 256, 711))
+        self.layoutWidget.setGeometry(QRect(1030, 0, 244, 598))
         self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.widget_2 = QWidget(self.layoutWidget)
-        self.widget_2.setObjectName(u"widget_2")
-        self.verticalLayout_2 = QVBoxLayout(self.widget_2)
+        self.optionsWidget = QWidget(self.layoutWidget)
+        self.optionsWidget.setObjectName(u"optionsWidget")
+        self.verticalLayout_2 = QVBoxLayout(self.optionsWidget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.convertGrayScale = QRadioButton(self.widget_2)
-        self.convertGrayScale.setObjectName(u"convertGrayScale")
-
-        self.verticalLayout_2.addWidget(self.convertGrayScale)
-
-        self.skeletonize = QRadioButton(self.widget_2)
+        self.skeletonize = QRadioButton(self.optionsWidget)
         self.skeletonize.setObjectName(u"skeletonize")
 
         self.verticalLayout_2.addWidget(self.skeletonize)
 
-        self.showContours = QRadioButton(self.widget_2)
+        self.showContours = QRadioButton(self.optionsWidget)
         self.showContours.setObjectName(u"showContours")
 
         self.verticalLayout_2.addWidget(self.showContours)
+
+        self.convertGrayScale = QRadioButton(self.optionsWidget)
+        self.convertGrayScale.setObjectName(u"convertGrayScale")
+
+        self.verticalLayout_2.addWidget(self.convertGrayScale)
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.label = QLabel(self.widget_2)
+        self.label = QLabel(self.optionsWidget)
         self.label.setObjectName(u"label")
         self.label.setMaximumSize(QSize(16777215, 20))
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.label_2 = QLabel(self.widget_2)
+        self.label_2 = QLabel(self.optionsWidget)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setMaximumSize(QSize(16777215, 20))
 
@@ -71,7 +71,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.horizontalSlider = QSlider(self.widget_2)
+        self.horizontalSlider = QSlider(self.optionsWidget)
         self.horizontalSlider.setObjectName(u"horizontalSlider")
         self.horizontalSlider.setMaximumSize(QSize(16777215, 20))
         self.horizontalSlider.setOrientation(Qt.Horizontal)
@@ -81,24 +81,24 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
-        self.cropButton = QRadioButton(self.widget_2)
+        self.cropButton = QRadioButton(self.optionsWidget)
         self.cropButton.setObjectName(u"cropButton")
 
         self.verticalLayout_2.addWidget(self.cropButton)
 
         self.pointSelect1 = QHBoxLayout()
         self.pointSelect1.setObjectName(u"pointSelect1")
-        self.pointSelect1X = QSpinBox(self.widget_2)
+        self.pointSelect1X = QSpinBox(self.optionsWidget)
         self.pointSelect1X.setObjectName(u"pointSelect1X")
 
         self.pointSelect1.addWidget(self.pointSelect1X)
 
-        self.label_3 = QLabel(self.widget_2)
+        self.label_3 = QLabel(self.optionsWidget)
         self.label_3.setObjectName(u"label_3")
 
         self.pointSelect1.addWidget(self.label_3)
 
-        self.pointSelect1Y = QSpinBox(self.widget_2)
+        self.pointSelect1Y = QSpinBox(self.optionsWidget)
         self.pointSelect1Y.setObjectName(u"pointSelect1Y")
 
         self.pointSelect1.addWidget(self.pointSelect1Y)
@@ -108,17 +108,17 @@ class Ui_MainWindow(object):
 
         self.pointSelect2 = QHBoxLayout()
         self.pointSelect2.setObjectName(u"pointSelect2")
-        self.pointSelect2X = QSpinBox(self.widget_2)
+        self.pointSelect2X = QSpinBox(self.optionsWidget)
         self.pointSelect2X.setObjectName(u"pointSelect2X")
 
         self.pointSelect2.addWidget(self.pointSelect2X)
 
-        self.label_4 = QLabel(self.widget_2)
+        self.label_4 = QLabel(self.optionsWidget)
         self.label_4.setObjectName(u"label_4")
 
         self.pointSelect2.addWidget(self.label_4)
 
-        self.pointSelect2Y = QSpinBox(self.widget_2)
+        self.pointSelect2Y = QSpinBox(self.optionsWidget)
         self.pointSelect2Y.setObjectName(u"pointSelect2Y")
 
         self.pointSelect2.addWidget(self.pointSelect2Y)
@@ -126,18 +126,18 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.pointSelect2)
 
-        self.confirmCrop = QPushButton(self.widget_2)
+        self.confirmCrop = QPushButton(self.optionsWidget)
         self.confirmCrop.setObjectName(u"confirmCrop")
 
         self.verticalLayout_2.addWidget(self.confirmCrop)
 
-        self.cancelCrop = QPushButton(self.widget_2)
+        self.cancelCrop = QPushButton(self.optionsWidget)
         self.cancelCrop.setObjectName(u"cancelCrop")
 
         self.verticalLayout_2.addWidget(self.cancelCrop)
 
 
-        self.verticalLayout_3.addWidget(self.widget_2)
+        self.verticalLayout_3.addWidget(self.optionsWidget)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setSpacing(0)
@@ -171,6 +171,7 @@ class Ui_MainWindow(object):
 
         self.previewWindow = QLabel(self.layoutWidget)
         self.previewWindow.setObjectName(u"previewWindow")
+        self.previewWindow.setMinimumSize(QSize(200, 200))
         self.previewWindow.setMaximumSize(QSize(16777215, 400))
 
         self.verticalLayout_3.addWidget(self.previewWindow)
@@ -184,9 +185,9 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.videoFrame.setText("")
-        self.convertGrayScale.setText(QCoreApplication.translate("MainWindow", u"Convert to Gray Scale", None))
         self.skeletonize.setText(QCoreApplication.translate("MainWindow", u"Skeletonize", None))
         self.showContours.setText(QCoreApplication.translate("MainWindow", u"Show Contours", None))
+        self.convertGrayScale.setText(QCoreApplication.translate("MainWindow", u"Convert to Gray Scale", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Threshold", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"N/A", None))
         self.cropButton.setText(QCoreApplication.translate("MainWindow", u"Crop", None))

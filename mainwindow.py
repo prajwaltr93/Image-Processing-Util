@@ -249,6 +249,22 @@ class MainWindow(QWidget):
                 if self.ui.applyThresholdButton.isChecked():
                     _, frame = cv2.threshold(frame, int(self.ui.thresholdSlider.value()), 255, cv2.THRESH_BINARY)
                     pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
+
+                # find contours if selected
+                if self.ui.showContours.isChecked():
+                    contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    # paint all contours on to the screen
+                    contourPainter = QPainter()
+                    contourPainter.begin(pixmap)
+                    contourPainter.setPen(self.cropPreviewPen)
+
+                    for contour in contours:
+                        for point in contour:
+                            point = point[0]
+                            contourPainter.drawEllipse(QPoint(point[0], point[1]), 2, 2)
+
+                    contourPainter.end()
+
             else:
                 bits = 3 * width
                 pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_BGR888))

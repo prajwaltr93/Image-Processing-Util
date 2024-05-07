@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         self.videoFrame.setGeometry(QRect(10, 0, 1011, 711))
         self.layoutWidget = QWidget(MainWindow)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(1030, 0, 244, 598))
+        self.layoutWidget.setGeometry(QRect(1030, 0, 244, 599))
         self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -54,6 +54,11 @@ class Ui_MainWindow(object):
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.applyThresholdButton = QRadioButton(self.optionsWidget)
+        self.applyThresholdButton.setObjectName(u"applyThresholdButton")
+
+        self.verticalLayout.addWidget(self.applyThresholdButton)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.label = QLabel(self.optionsWidget)
@@ -62,21 +67,23 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.label_2 = QLabel(self.optionsWidget)
-        self.label_2.setObjectName(u"label_2")
-        self.label_2.setMaximumSize(QSize(16777215, 20))
+        self.thresholdValue = QLabel(self.optionsWidget)
+        self.thresholdValue.setObjectName(u"thresholdValue")
+        self.thresholdValue.setMaximumSize(QSize(16777215, 20))
 
-        self.horizontalLayout.addWidget(self.label_2)
+        self.horizontalLayout.addWidget(self.thresholdValue)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.horizontalSlider = QSlider(self.optionsWidget)
-        self.horizontalSlider.setObjectName(u"horizontalSlider")
-        self.horizontalSlider.setMaximumSize(QSize(16777215, 20))
-        self.horizontalSlider.setOrientation(Qt.Horizontal)
+        self.thresholdSlider = QSlider(self.optionsWidget)
+        self.thresholdSlider.setObjectName(u"thresholdSlider")
+        self.thresholdSlider.setMaximumSize(QSize(16777215, 20))
+        self.thresholdSlider.setMaximum(255)
+        self.thresholdSlider.setOrientation(Qt.Horizontal)
+        self.thresholdSlider.setTickPosition(QSlider.TicksBelow)
 
-        self.verticalLayout.addWidget(self.horizontalSlider)
+        self.verticalLayout.addWidget(self.thresholdSlider)
 
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
@@ -188,8 +195,9 @@ class Ui_MainWindow(object):
         self.skeletonize.setText(QCoreApplication.translate("MainWindow", u"Skeletonize", None))
         self.showContours.setText(QCoreApplication.translate("MainWindow", u"Show Contours", None))
         self.convertGrayScale.setText(QCoreApplication.translate("MainWindow", u"Convert to Gray Scale", None))
+        self.applyThresholdButton.setText(QCoreApplication.translate("MainWindow", u"Apply Threshold", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Threshold", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"N/A", None))
+        self.thresholdValue.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.cropButton.setText(QCoreApplication.translate("MainWindow", u"Crop", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Point 1 (x1, y1)", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Point 2 (x1, y1)", None))

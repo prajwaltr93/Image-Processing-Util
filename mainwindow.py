@@ -14,8 +14,8 @@ from ui_form import Ui_MainWindow
 
 
 def checkNullPoint(point):
-    # fun fact: is checks the id() of operands, since there can only be one None, two operands
-    # pointing to None will have same id :)
+    # fun fact: `is` checks the id() of operands (indirectly memory address), since there can only be one None, two operands
+    # pointing to None will have same id (memory address) :)
     if point is None:
         return True
 
@@ -38,7 +38,7 @@ class MainWindow(QWidget):
         self.cropConfirmed = False
 
         # TODO: improve this hardcoded list
-        self.nonExclusiveButtonsList = [self.ui.convertGrayScale, self.ui.skeletonize, self.ui.showContours, self.ui.cropButton]
+        self.nonExclusiveButtonsList = [self.ui.convertGrayScale, self.ui.skeletonize, self.ui.showContours, self.ui.cropButton, self.ui.applyThresholdButton]
 
         self.nonExclusiveButtonsBG = QButtonGroup(self)
         for button in self.nonExclusiveButtonsList:
@@ -84,6 +84,8 @@ class MainWindow(QWidget):
         self.ui.cropButton.clicked.connect(self.startCropping)
         self.ui.playPause.clicked.connect(self.playPause)
 
+        self.ui.thresholdSlider.valueChanged.connect(self.thresholdValueChanged)
+
         # connect crop point spin box
         self.ui.pointSelect1X.valueChanged.connect(self.pointSelect1XValueChanged)
         self.ui.pointSelect1Y.valueChanged.connect(self.pointSelect1YValueChanged)
@@ -99,8 +101,8 @@ class MainWindow(QWidget):
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
 
-        # few more tweaks
-        # self.ui.Options.setExclusive(False)
+    def thresholdValueChanged(self, value):
+        self.ui.thresholdValue.setText(str(value))
 
     def confirmCrop(self):
         # TODO: add a dialog informing resize of videoFrame
@@ -169,6 +171,10 @@ class MainWindow(QWidget):
                 if checkNullPoint(self.moveStart):
                     # update manual point selecter
                     self.moveStart = event.pos()
+                    # but account for dragged video frame, it would have moved self.dx and self.dy
+                    if not checkNullPoint(self.diffPoint):
+                        # TODO: ironically this is setting x,y, width, height. remember this behaviour or fix it (●'◡'●)
+                        self.moveStart += self.diffPoint
                     self.ui.pointSelect1X.setValue(self.moveStart.x())
                     self.ui.pointSelect1Y.setValue(self.moveStart.y())
                 else:
@@ -222,7 +228,7 @@ class MainWindow(QWidget):
             self.ui.pointSelect2Y.setMaximum(frame_height)
 
             self.playPauseButton.setText("Pause")
-            self.refreshTimer.start(1000)
+            self.refreshTimer.start(2000)
 
     def paintEvent(self, paintRegion):
         if not self.refreshTimer.isActive():
@@ -237,12 +243,15 @@ class MainWindow(QWidget):
             height, width, channel = frame.shape
 
             if self.grayScale:
-                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 bits = width
                 pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
+                if self.ui.applyThresholdButton.isChecked():
+                    _, frame = cv2.threshold(frame, int(self.ui.thresholdSlider.value()), 255, cv2.THRESH_BINARY)
+                    pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
             else:
                 bits = 3 * width
-                pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_RGB888))
+                pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_BGR888))
 
             # set Image to video Frame
             self.diffPoint = self.dragStart - self.dragStop
@@ -251,6 +260,7 @@ class MainWindow(QWidget):
             if self.cropConfirmed:
                 # self.ui.videoFrame.setPixmap(pixmap.copy(QRect(self.moveStart, self.moveStop)).scaled(self.videoFrame.width(), self.videoFrame.height()))
                 self.ui.videoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()).scaled(self.videoFrame.width(), self.videoFrame.height()))
+                # self.ui.videoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()))
                 # self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, 600, 600).scaled(self.videoFrame.width(), self.videoFrame.height()))
             else:
                 self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(self.diffPoint)))
@@ -280,7 +290,6 @@ class MainWindow(QWidget):
             #     previewPainter.drawLine(self.dragStart, self.dragStop)
 
             previewPainter.end()
-
 
             # draw crop rectangle
             if self.ui.cropButton.isChecked():

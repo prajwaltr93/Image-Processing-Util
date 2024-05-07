@@ -1,17 +1,18 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, QDialog
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt
 import cv2
+import multiprocessing
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
-
+from ui_CustomDialogForm import Ui_CustomDialogForm
 
 def checkNullPoint(point):
     # fun fact: `is` checks the id() of operands (indirectly memory address), since there can only be one None, two operands
@@ -44,7 +45,57 @@ def findRoot(contours):
                 tipPoint = point
     return tipPoint
 
+class CustomDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        # halt parent refresh timer
+        if parent.refreshTimer.isActive():
+            parent.refreshTimer.stop()
+
+        self.customDialogUI = Ui_CustomDialogForm()
+        self.customDialogUI.setupUi(self)
+
+        # setup accept and reject calls
+        self.customDialogUI.exportButton.clicked.connect(self.accept)
+        self.customDialogUI.cancelButton.clicked.connect(self.reject)
+
+        # ^_____^
+        self.parent = parent
+
+        # populate multi proc values
+        cpus = multiprocessing.cpu_count()
+        cpuValues = [str(i) for i in range(1, cpus + 1)]
+        self.customDialogUI.multiProcValues.addItems(cpuValues)
+
+
+    def execAndCollect(self):
+        result = self.exec()
+        if result == QDialog.DialogCode.Accepted:
+            # grab all selections and pass it on to parent
+            self.parent.startExporting(self.customDialogUI.contourDataEachFrame.isChecked(),
+                                        self.customDialogUI.tipRootOverlayVideo.isChecked(),
+                                        self.customDialogUI.tipRootCoordinates.isChecked(),
+                                        int(self.customDialogUI.multiProcValues.currentText()) if self.customDialogUI.multiProcessing.isChecked() else 0)
+        else:
+            # cancelled export, start doing what you were doing
+            if not self.parent.refreshTimer.isActive() and hasattr(self.parent, "video"):
+                self.parent.refreshTimer.start()
+
 class MainWindow(QWidget):
+
+    def startExporting(self, exportContourData, exportContourVideo, exportTipCordinates, multiProcessing):
+        # start processing sequentially and a progress bar would be nice
+        print(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing)
+        if exportContourData:
+            pass
+
+        if exportContourVideo:
+            pass
+
+        if exportTipCordinates:
+            pass
+
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
@@ -134,6 +185,13 @@ class MainWindow(QWidget):
         self.ui.tipOrRootSelector.addItems(contourOptions)
 
         self.ui.showContours.clicked.connect(self.showTipOrRoot)
+
+        # customize the QDialog
+        customDialog = CustomDialog(self)
+        # customDialog.exec()
+
+        self.ui.exportVideo.clicked.connect(customDialog.execAndCollect)
+
 
     def showTipOrRoot(self):
         if self.ui.tipOrRootSelector.isVisible():

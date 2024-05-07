@@ -228,14 +228,15 @@ class MainWindow(QWidget):
             self.ui.pointSelect2Y.setMaximum(frame_height)
 
             self.playPauseButton.setText("Pause")
-            self.refreshTimer.start(2000)
+            self.refreshTimer.start(1000)
 
     def paintEvent(self, paintRegion):
         if not self.refreshTimer.isActive():
             return
 
+        # debug lines
         # print(self.dragStart, self.dragStop)
-        print(self.moveStart, self.moveStop)
+        # print(self.moveStart, self.moveStop)
 
         ret, frame = self.video.read()
         if ret:
@@ -252,7 +253,15 @@ class MainWindow(QWidget):
 
                 # find contours if selected
                 if self.ui.showContours.isChecked():
-                    contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    # if cropped, find contours only within it
+                    if not self.ui.cropButton.isChecked():
+                        contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    else:
+                        frame = frame[self.moveStart.y(): self.moveStop.y() + self.moveStart.y():, self.moveStart.x(): self.moveStart.x() + self.moveStop.x()]
+                        # skeletonize after cropping for better results
+                        if self.ui.skeletonize.isChecked():
+                            frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
+                        contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     # paint all contours on to the screen
                     contourPainter = QPainter()
                     contourPainter.begin(pixmap)
@@ -261,7 +270,10 @@ class MainWindow(QWidget):
                     for contour in contours:
                         for point in contour:
                             point = point[0]
-                            contourPainter.drawEllipse(QPoint(point[0], point[1]), 2, 2)
+                            if self.ui.cropButton.isChecked():
+                                point[0] += self.moveStart.x()
+                                point[1] += self.moveStart.y()
+                            contourPainter.drawEllipse(QPoint(point[0], point[1]), 1, 1)
 
                     contourPainter.end()
 
@@ -309,13 +321,13 @@ class MainWindow(QWidget):
 
             # draw crop rectangle
             if self.ui.cropButton.isChecked():
-                    if not checkNullPoint(self.moveStart) and not checkNullPoint(self.moveStop):
-                        cropPreviewPainter = QPainter()
-                        cropPreviewPainter.begin(copyCurrentFrame)
-                        cropPreviewPainter.setPen(self.cropPreviewPen)
-                        # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
-                        cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y())
-                        cropPreviewPainter.end()
+                if not checkNullPoint(self.moveStart) and not checkNullPoint(self.moveStop):
+                    cropPreviewPainter = QPainter()
+                    cropPreviewPainter.begin(copyCurrentFrame)
+                    cropPreviewPainter.setPen(self.cropPreviewPen)
+                    # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
+                    cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y())
+                    cropPreviewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())
 

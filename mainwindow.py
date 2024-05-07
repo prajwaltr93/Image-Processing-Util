@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, 
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt
 import cv2
+import os
 import multiprocessing
 
 # Important:
@@ -86,6 +87,21 @@ class MainWindow(QWidget):
     def startExporting(self, exportContourData, exportContourVideo, exportTipCordinates, multiProcessing):
         # start processing sequentially and a progress bar would be nice
         print(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing)
+        if hasattr(self, "video"):
+            # close the video handle and get a new one
+            self.video.release()
+
+        if not os.path.isdir("output"):
+            os.mkdir("output")
+
+        # process everything here
+        # open the video
+        videoCapture = cv2.videoCapture(self.fileName)
+        # process the video based on configured parameters, threshold, crop, grayscale and skeletonize
+        # and extract data also the number of frames for progress bar
+        # TODO: use multi proc if configured
+        # TODO: sanity check
+
         if exportContourData:
             pass
 

@@ -24,6 +24,26 @@ def checkNullPoint(point):
     else:
         return False
 
+def findTip(contours):
+    # assume first point to be the point of interest (pun intended :))
+    tipPoint = contours[0][0][0]
+    for contour in contours:
+        for point in contour:
+            point = point[0]
+            if (point[0] > tipPoint[0] and point[1] < tipPoint[1]):
+                tipPoint = point
+    return tipPoint
+
+def findRoot(contours):
+    # assume first point to be the point of interest (pun intended :))
+    tipPoint = contours[0][0][0]
+    for contour in contours:
+        for point in contour:
+            point = point[0]
+            if (point[0] < tipPoint[0] and point[1] > tipPoint[1]):
+                tipPoint = point
+    return tipPoint
+
 class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -60,6 +80,10 @@ class MainWindow(QWidget):
         cropPreviewPen = QPen(QColor("red"))
         cropPreviewPen.setWidth(10)
         self.cropPreviewPen = cropPreviewPen
+
+        tipMarkerPen = QPen(QColor("yellow"))
+        tipMarkerPen.setWidth(10)
+        self.tipMarkerPen = tipMarkerPen
 
         self.videoFrameCropWindow = QRect(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height())
 
@@ -100,6 +124,23 @@ class MainWindow(QWidget):
         # setup refreshRate of all windows
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
+
+        # hide show contours combo box
+        self.ui.tipOrRootSelector.hide()
+
+        # populate combo box
+        contourOptions = ["Tip", "Root"]
+
+        self.ui.tipOrRootSelector.addItems(contourOptions)
+
+        self.ui.showContours.clicked.connect(self.showTipOrRoot)
+
+    def showTipOrRoot(self):
+        if self.ui.tipOrRootSelector.isVisible():
+            self.ui.tipOrRootSelector.hide()
+        else:
+            self.ui.tipOrRootSelector.show()
+
 
     def thresholdValueChanged(self, value):
         self.ui.thresholdValue.setText(str(value))
@@ -267,13 +308,28 @@ class MainWindow(QWidget):
                     contourPainter.begin(pixmap)
                     contourPainter.setPen(self.cropPreviewPen)
 
-                    for contour in contours:
-                        for point in contour:
-                            point = point[0]
-                            if self.ui.cropButton.isChecked():
-                                point[0] += self.moveStart.x()
-                                point[1] += self.moveStart.y()
-                            contourPainter.drawEllipse(QPoint(point[0], point[1]), 1, 1)
+                    # for contour in contours:
+                    #     for point in contour:
+                    #         point = point[0]
+                    #         if self.ui.cropButton.isChecked():
+                    #             point[0] += self.moveStart.x()
+                    #             point[1] += self.moveStart.y()
+                    #         contourPainter.drawEllipse(QPoint(point[0], point[1]), 1, 1)
+
+                    # while drawing circles, account for Tip or Root
+                    if self.ui.tipOrRootSelector.currentText() == "Tip":
+                        # selectedPoint = contours[-1][0][0]
+                        selectedPoint = findTip(contours)
+                    else:
+                        # selectedPoint = contours[0][0][0]
+                        selectedPoint = findRoot(contours)
+
+                    # print(selectedPoint, self.ui.tipOrRootSelector.currentText())
+                    selectedPoint[0] += self.moveStart.x()
+                    selectedPoint[1] += self.moveStart.y()
+
+                    contourPainter.setPen(self.tipMarkerPen)
+                    contourPainter.drawEllipse(QPoint(selectedPoint[0], selectedPoint[1]), 1, 1)
 
                     contourPainter.end()
 

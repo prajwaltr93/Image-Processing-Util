@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QPushButton,
-    QRadioButton, QSizePolicy, QSlider, QSpinBox,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
+    QPushButton, QRadioButton, QSizePolicy, QSlider,
+    QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         self.videoFrame.setGeometry(QRect(10, 0, 1011, 711))
         self.layoutWidget = QWidget(MainWindow)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(1030, 0, 244, 599))
+        self.layoutWidget.setGeometry(QRect(1030, 0, 244, 618))
         self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -46,6 +46,11 @@ class Ui_MainWindow(object):
         self.showContours.setObjectName(u"showContours")
 
         self.verticalLayout_2.addWidget(self.showContours)
+
+        self.tipOrRootSelector = QComboBox(self.optionsWidget)
+        self.tipOrRootSelector.setObjectName(u"tipOrRootSelector")
+
+        self.verticalLayout_2.addWidget(self.tipOrRootSelector)
 
         self.convertGrayScale = QRadioButton(self.optionsWidget)
         self.convertGrayScale.setObjectName(u"convertGrayScale")

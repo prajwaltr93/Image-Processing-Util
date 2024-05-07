@@ -32,7 +32,7 @@
      <x>1030</x>
      <y>0</y>
      <width>244</width>
-     <height>599</height>
+     <height>618</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -52,6 +52,9 @@
           <string>Show Contours</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="tipOrRootSelector"/>
        </item>
        <item>
         <widget class="QRadioButton" name="convertGrayScale">

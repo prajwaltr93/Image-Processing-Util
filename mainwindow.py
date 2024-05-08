@@ -1,12 +1,13 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, QDialog
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, QProgressDialog, QDialog
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
-from PySide6.QtCore import QTimer, QRect, QPoint, Qt
+from PySide6.QtCore import QTimer, QRect, QPoint, Qt, QThread, Signal
 import cv2
 import os
 import multiprocessing
+import csv
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -14,6 +15,7 @@ import multiprocessing
 #     pyside2-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
 from ui_CustomDialogForm import Ui_CustomDialogForm
+from ui_ExportProgressBar import Ui_ExportProgressBar
 
 def checkNullPoint(point):
     # fun fact: `is` checks the id() of operands (indirectly memory address), since there can only be one None, two operands
@@ -82,6 +84,105 @@ class CustomDialog(QDialog):
             if not self.parent.refreshTimer.isActive() and hasattr(self.parent, "video"):
                 self.parent.refreshTimer.start()
 
+class CustomProgressBar(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.exportProgressBar = Ui_ExportProgressBar
+        self.exportProgressBar.setupUi(self)
+
+        # TODO: connect cancel export button
+
+    def updateProgressBar(self, value):
+        self.exportProgressBar.progressBar.setValue(value)
+
+class WorkerThread(QThread):
+    finished = Signal()
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+
+    def setup(self, exportContourData, exportContourVideo, exportTipCordinates, videoCapture):
+        self.exportContourData = exportContourData
+        self.exportContourVideo = exportContourVideo
+        self.exportTipCordinates = exportTipCordinates
+        self.videoCapture = videoCapture
+
+        self.numFrames = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    def run(self):
+        # inflate a progress bar
+        cutomProgressBar = QProgressDialog("Exporting Data", "Abort Export", 0, 100)
+        print("hello")
+
+
+        # process the video based on configured parameters, threshold, crop, grayscale and skeletonize
+        # and extract data also the number of frames for progress bar
+
+        if self.exportContourVideo:
+            pass
+
+        if self.exportTipCordinates:
+            csvTipRootDataHandle = open(f"output/{self.parent.ui.tipOrRootSelector.currentText()}.csv", "w", newline='')
+            csvTipRootDataWriter = csv.writer(csvTipRootDataHandle)
+
+        index = 0
+        while True:
+            ret, frame = self.videoCapture.read()
+
+            if not ret:
+                break
+            # TODO: use multi proc if configured
+            # TODO: sanity check
+            # set image to actual Windows
+            height, width, channel = frame.shape
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            _, frame = cv2.threshold(frame, int(self.parent.ui.thresholdSlider.value()), 255, cv2.THRESH_BINARY)
+            contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            frame = frame[self.parent.moveStart.y(): self.parent.moveStop.y() + self.parent.moveStart.y():, self.parent.moveStart.x(): self.parent.moveStart.x() + self.parent.moveStop.x()]
+
+            # skeletonize after cropping for better results
+            frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
+            contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            # find contours if selected
+            if self.exportContourData:
+                # if cropped, find contours only within it
+                csvContourDataHandle = open(f"output/ContourData_Frame_{index}.csv", "w", newline='')
+                csvContourDataWriter = csv.writer(csvContourDataHandle)
+                for contour in contours:
+                    for point in contour:
+                        point = point[0]
+                        point[0] += self.parent.moveStart.x()
+                        point[1] += self.parent.moveStart.y()
+                        csvContourDataWriter.writerow(point)
+                csvContourDataHandle.close()
+
+            if self.exportContourVideo:
+                pass
+
+            if self.exportTipCordinates:
+                # while drawing circles, account for Tip or Root
+                if self.parent.ui.tipOrRootSelector.currentText() == "Tip":
+                    # selectedPoint = contours[-1][0][0]
+                    selectedPoint = findTip(contours)
+                else:
+                    # selectedPoint = contours[0][0][0]
+                    selectedPoint = findRoot(contours)
+                    # print(selectedPoint, self.ui.tipOrRootSelector.currentText())
+                selectedPoint[0] += self.parent.moveStart.x()
+                selectedPoint[1] += self.parent.moveStart.y()
+                csvTipRootDataWriter.writerow(selectedPoint)
+
+            index += 1
+
+            # update progress bar
+            cutomProgressBar.setValue((index/self.numFrames) * 100)
+
+
+        # notify parent
+        self.finished.emit()
+
 class MainWindow(QWidget):
 
     def startExporting(self, exportContourData, exportContourVideo, exportTipCordinates, multiProcessing):
@@ -94,23 +195,16 @@ class MainWindow(QWidget):
         if not os.path.isdir("output"):
             os.mkdir("output")
 
-        # process everything here
-        # open the video
-        videoCapture = cv2.videoCapture(self.fileName)
-        # process the video based on configured parameters, threshold, crop, grayscale and skeletonize
-        # and extract data also the number of frames for progress bar
-        # TODO: use multi proc if configured
-        # TODO: sanity check
+        videoCapture = cv2.VideoCapture(self.fileName)
 
-        if exportContourData:
-            pass
+        self.workerThread = WorkerThread(self)
+        # self.workerThread.setup(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing, videoCapture)
+        self.workerThread.setup(exportContourData, exportContourVideo, exportTipCordinates, videoCapture)
+        self.workerThread.finished.connect(self.onThreadFinished)
+        self.workerThread.start()
 
-        if exportContourVideo:
-            pass
-
-        if exportTipCordinates:
-            pass
-
+    def onThreadFinished(self):
+        print("Done :)")
 
     def __init__(self, parent=None):
         super().__init__(parent)

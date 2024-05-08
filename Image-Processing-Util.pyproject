@@ -2,6 +2,7 @@
     "files": [
         "mainwindow.py",
         "form.ui",
-        "CustomDialogForm.ui"
+        "CustomDialogForm.ui",
+        "ExportProgressBar.ui"
     ]
 }

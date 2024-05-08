@@ -2,6 +2,7 @@
 # ----------------------------------------------------------------------------
 venv/
 Image-Processing-Util.pyproject.user
+output/
 
 *~
 *.autosave

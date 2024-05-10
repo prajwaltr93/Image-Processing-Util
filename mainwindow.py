@@ -72,7 +72,7 @@ class CustomDialog(QDialog):
 
 
     def execAndCollect(self):
-        result = self.exec()
+        result = self.open()
         if result == QDialog.DialogCode.Accepted:
             # grab all selections and pass it on to parent
             self.parent.startExporting(self.customDialogUI.contourDataEachFrame.isChecked(),
@@ -102,19 +102,16 @@ class WorkerThread(QThread):
         super().__init__(parent)
         self.parent = parent
 
-    def setup(self, exportContourData, exportContourVideo, exportTipCordinates, videoCapture):
-        self.exportContourData = exportContourData
-        self.exportContourVideo = exportContourVideo
-        self.exportTipCordinates = exportTipCordinates
-        self.videoCapture = videoCapture
-
-        self.numFrames = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
+    def setup(self, configDict):
+        self.configDict = configDict
 
     def run(self):
-        # inflate a progress bar
-        cutomProgressBar = QProgressDialog("Exporting Data", "Abort Export", 0, 100)
-        print("hello")
+        self.exportContourData = self.configDict["exportContourData"]
+        self.exportContourVideo = self.configDict["exportContourVideo"]
+        self.exportTipCordinates = self.configDict["exportTipCordinates"]
+        self.videoCapture = self.configDict["videoCaptureHandle"]
 
+        self.numFrames = self.videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
 
         # process the video based on configured parameters, threshold, crop, grayscale and skeletonize
         # and extract data also the number of frames for progress bar
@@ -123,9 +120,10 @@ class WorkerThread(QThread):
             pass
 
         if self.exportTipCordinates:
-            csvTipRootDataHandle = open(f"output/{self.parent.ui.tipOrRootSelector.currentText()}.csv", "w", newline='')
+            csvTipRootDataHandle = open(f"output/{self.configDict['tipOrRootSelection']}.csv", "w", newline='')
             csvTipRootDataWriter = csv.writer(csvTipRootDataHandle)
 
+        # '''
         index = 0
         while True:
             ret, frame = self.videoCapture.read()
@@ -137,9 +135,9 @@ class WorkerThread(QThread):
             # set image to actual Windows
             height, width, channel = frame.shape
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            _, frame = cv2.threshold(frame, int(self.parent.ui.thresholdSlider.value()), 255, cv2.THRESH_BINARY)
+            _, frame = cv2.threshold(frame, int(self.configDict['thresholdValue']), 255, cv2.THRESH_BINARY)
             contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            frame = frame[self.parent.moveStart.y(): self.parent.moveStop.y() + self.parent.moveStart.y():, self.parent.moveStart.x(): self.parent.moveStart.x() + self.parent.moveStop.x()]
+            frame = frame[self.configDict['moveStart'].y(): self.configDict['moveStart'].y() + self.configDict['moveStop'].y():, self.configDict['moveStart'].x(): self.configDict['moveStart'].x() + self.configDict['moveStop'].x()]
 
             # skeletonize after cropping for better results
             frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
@@ -153,8 +151,8 @@ class WorkerThread(QThread):
                 for contour in contours:
                     for point in contour:
                         point = point[0]
-                        point[0] += self.parent.moveStart.x()
-                        point[1] += self.parent.moveStart.y()
+                        point[0] += self.configDict['moveStart'].x()
+                        point[1] += self.configDict['moveStart'].y()
                         csvContourDataWriter.writerow(point)
                 csvContourDataHandle.close()
 
@@ -170,14 +168,16 @@ class WorkerThread(QThread):
                     # selectedPoint = contours[0][0][0]
                     selectedPoint = findRoot(contours)
                     # print(selectedPoint, self.ui.tipOrRootSelector.currentText())
-                selectedPoint[0] += self.parent.moveStart.x()
-                selectedPoint[1] += self.parent.moveStart.y()
+                selectedPoint[0] += self.configDict['moveStart'].x()
+                selectedPoint[1] += self.configDict['moveStart'].y()
                 csvTipRootDataWriter.writerow(selectedPoint)
 
             index += 1
+            print("working")
 
             # update progress bar
-            cutomProgressBar.setValue((index/self.numFrames) * 100)
+            self.configDict['progressBarObject'].setValue((index/self.numFrames) * 100)
+        # '''
 
 
         # notify parent
@@ -188,6 +188,9 @@ class MainWindow(QWidget):
     def startExporting(self, exportContourData, exportContourVideo, exportTipCordinates, multiProcessing):
         # start processing sequentially and a progress bar would be nice
         print(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing)
+        # inflate a progress bar
+        customProgressBar = QProgressDialog("Exporting Data", "Abort Export", 0, 100, self)
+
         if hasattr(self, "video"):
             # close the video handle and get a new one
             self.video.release()
@@ -197,9 +200,22 @@ class MainWindow(QWidget):
 
         videoCapture = cv2.VideoCapture(self.fileName)
 
+        # prep a dict to carry all necessary information that is bound a MainWindow attributes
+        configDict = {
+                "exportContourData" : exportContourData,
+                "exportContourVideo" : exportContourVideo,
+                "exportTipCordinates" : exportTipCordinates,
+                "videoCaptureHandle" : videoCapture,
+                "thresholdValue" : self.ui.thresholdSlider.value(),
+                "moveStart" : self.moveStart,
+                "moveStop" : self.moveStop,
+                "tipOrRootSelection" : self.ui.tipOrRootSelector.currentText(),
+                "progressBarObject" : customProgressBar
+        }
+
         self.workerThread = WorkerThread(self)
         # self.workerThread.setup(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing, videoCapture)
-        self.workerThread.setup(exportContourData, exportContourVideo, exportTipCordinates, videoCapture)
+        self.workerThread.setup(configDict)
         self.workerThread.finished.connect(self.onThreadFinished)
         self.workerThread.start()
 

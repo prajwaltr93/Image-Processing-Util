@@ -260,7 +260,6 @@ class MainWindow(QWidget):
         self.fileName = None
         self.currentFrame = None
         self.grayScale = False
-        self.cropVisible = False
         self.cropConfirmed = False
 
         # # TODO: improve this hardcoded list
@@ -305,26 +304,17 @@ class MainWindow(QWidget):
         self.hideWindowsRecursive(self.ui.previewWindow)
         self.hideWindowsRecursive(self.ui.exportDataWindow)
 
-        '''
-        self.hideCropGUIAttributes()
-
+        # '''
         self.playPauseButton = self.ui.playPause
-
-
         self.previewWindow = self.ui.PreviewWindow
-
         self.videoFrame = self.ui.VideoFrame
 
         self.videoFrame.mousePressEvent = self.dragStartCallBack
-
         self.videoFrame.mouseMoveEvent = self.dragContinueCallBack
-
         self.videoFrame.mouseReleaseEvent = self.dragStopCallBack
 
         # setup up signals and slots
         self.ui.loadVideo.clicked.connect(self.openVideo)
-        self.ui.convertGrayScale.clicked.connect(self.convertToGrayScale)
-        self.ui.cropButton.clicked.connect(self.startCropping)
         self.ui.playPause.clicked.connect(self.playPause)
 
         self.ui.thresholdSlider.valueChanged.connect(self.thresholdValueChanged)
@@ -340,28 +330,14 @@ class MainWindow(QWidget):
         self.ui.confirmCrop.clicked.connect(self.confirmCrop)
         self.ui.cancelCrop.clicked.connect(self.cancelCrop)
 
-
-        # # hide show contours combo box
-        # self.ui.tipOrRootSelector.hide()
-
         # populate combo box
         contourOptions = ["Tip", "Root"]
-
         self.ui.tipOrRootSelector.addItems(contourOptions)
 
-        self.ui.showContours.clicked.connect(self.showTipOrRoot)
-
-        # hide preview window, show on load of valid video
-
-        # hide export window
-
-        '''
+        # '''
         # setup refreshRate of all windows
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
-
-    # def hidePreviewWindow(self):
-    #     self.ui.prev
 
     def handleGrayScaleConv(self):
         if self.ui.convertGrayScale.isChecked():
@@ -369,19 +345,11 @@ class MainWindow(QWidget):
         else:
             self.hideWindowsRecursive(self.ui.applyThresholdWindow)
 
-
     def handleCropClick(self):
         if self.ui.cropButton.isChecked():
             self.showWindowsRecursive(self.ui.cropSelectWindow)
         else:
             self.hideWindowsRecursive(self.ui.cropSelectWindow)
-
-    def showTipOrRoot(self):
-        if self.ui.tipOrRootSelector.isVisible():
-            self.ui.tipOrRootSelector.hide()
-        else:
-            self.ui.tipOrRootSelector.show()
-
 
     def thresholdValueChanged(self, value):
         self.ui.thresholdValue.setText(str(value))
@@ -409,41 +377,6 @@ class MainWindow(QWidget):
 
     def pointSelect1YValueChanged(self, y):
         self.moveStart.setY(y)
-
-
-    def hideCropGUIAttributes(self):
-        # hide crop selectors
-        for child in reversed(range(self.ui.pointSelect1.count())):
-            self.ui.pointSelect1.itemAt(child).widget().hide()
-
-        for child in reversed(range(self.ui.pointSelect2.count())):
-            self.ui.pointSelect2.itemAt(child).widget().hide()
-
-        # hide confirm and cancel crop
-        self.ui.cancelCrop.hide()
-        self.ui.confirmCrop.hide()
-
-    def showCropGUIAttributes(self):
-        # show crop selectors
-        for child in reversed(range(self.ui.pointSelect1.count())):
-            self.ui.pointSelect1.itemAt(child).widget().show()
-        for child in reversed(range(self.ui.pointSelect2.count())):
-            self.ui.pointSelect2.itemAt(child).widget().show()
-
-        # show confirm and cancel crop
-        self.ui.cancelCrop.show()
-        self.ui.confirmCrop.show()
-
-
-    def startCropping(self):
-        if self.cropVisible:
-            # hide crop selectors
-            self.hideCropGUIAttributes()
-            self.cropVisible = False
-        else:
-            self.showCropGUIAttributes()
-            self.cropVisible = True
-
 
     def dragStartCallBack(self, event):
         if event.button() == Qt.RightButton:
@@ -525,7 +458,7 @@ class MainWindow(QWidget):
             # set image to actual Windows
             height, width, channel = frame.shape
 
-            if self.grayScale:
+            if self.ui.convertGrayScale.isChecked():
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 bits = width
                 pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
@@ -584,11 +517,11 @@ class MainWindow(QWidget):
             # crop has been selected, crop and resize instead
             if self.cropConfirmed:
                 # self.ui.videoFrame.setPixmap(pixmap.copy(QRect(self.moveStart, self.moveStop)).scaled(self.videoFrame.width(), self.videoFrame.height()))
-                self.ui.videoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()).scaled(self.videoFrame.width(), self.videoFrame.height()))
+                self.ui.VideoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()).scaled(self.videoFrame.width(), self.videoFrame.height()))
                 # self.ui.videoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()))
                 # self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, 600, 600).scaled(self.videoFrame.width(), self.videoFrame.height()))
             else:
-                self.ui.videoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(self.diffPoint)))
+                self.ui.VideoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(self.diffPoint)))
             # this is slow, TODO: why ?, anchors the image to top left
             # videoFramePainter = QPainter()
             # videoFramePainter.begin(self)
@@ -630,9 +563,6 @@ class MainWindow(QWidget):
 
             self.previewWindow.setPixmap(copyCurrentFrame)
         return
-
-    def convertToGrayScale(self):
-        self.grayScale = not self.grayScale
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

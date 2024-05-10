@@ -30,7 +30,8 @@ class Ui_MainWindow(object):
         self.mainWindow.setObjectName(u"mainWindow")
         self.VideoFrame = QLabel(MainWindow)
         self.VideoFrame.setObjectName(u"VideoFrame")
-        self.VideoFrame.setMinimumSize(QSize(800, 0))
+        self.VideoFrame.setMinimumSize(QSize(800, 600))
+        self.VideoFrame.setMaximumSize(QSize(100000, 100000))
 
         self.mainWindow.addWidget(self.VideoFrame)
 
@@ -163,6 +164,11 @@ class Ui_MainWindow(object):
 
         self.thresholdSlider = QSlider(MainWindow)
         self.thresholdSlider.setObjectName(u"thresholdSlider")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.thresholdSlider.sizePolicy().hasHeightForWidth())
+        self.thresholdSlider.setSizePolicy(sizePolicy)
         self.thresholdSlider.setMaximumSize(QSize(16777215, 20))
         self.thresholdSlider.setMaximum(255)
         self.thresholdSlider.setOrientation(Qt.Horizontal)
@@ -205,6 +211,7 @@ class Ui_MainWindow(object):
         self.PreviewWindow = QWidget(MainWindow)
         self.PreviewWindow.setObjectName(u"PreviewWindow")
         self.PreviewWindow.setMinimumSize(QSize(100, 100))
+        self.PreviewWindow.setMaximumSize(QSize(100000, 100))
 
         self.previewWindow.addWidget(self.PreviewWindow)
 

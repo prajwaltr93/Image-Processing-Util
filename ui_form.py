@@ -208,10 +208,8 @@ class Ui_MainWindow(object):
 
         self.previewWindow.addWidget(self.previewWindowText)
 
-        self.PreviewWindow = QWidget(MainWindow)
+        self.PreviewWindow = QLabel(MainWindow)
         self.PreviewWindow.setObjectName(u"PreviewWindow")
-        self.PreviewWindow.setMinimumSize(QSize(100, 100))
-        self.PreviewWindow.setMaximumSize(QSize(100000, 100))
 
         self.previewWindow.addWidget(self.PreviewWindow)
 
@@ -317,6 +315,7 @@ class Ui_MainWindow(object):
         self.showContours.setText(QCoreApplication.translate("MainWindow", u"Show Contours", None))
         self.skeletonize.setText(QCoreApplication.translate("MainWindow", u"Skeletonize", None))
         self.previewWindowText.setText(QCoreApplication.translate("MainWindow", u"Preview Window", None))
+        self.PreviewWindow.setText("")
         self.exportDataText.setText(QCoreApplication.translate("MainWindow", u"Export Data", None))
         self.contourDataEachFrame_4.setText(QCoreApplication.translate("MainWindow", u"Export Contour Data of each Frame (.csv)", None))
         self.tipRootOverlayVideo_4.setText(QCoreApplication.translate("MainWindow", u"Export modified video with Tip/Root overlay (.mp4) (ffmeg)", None))

@@ -247,7 +247,7 @@ class MainWindow(QWidget):
                     childInstance.widget().show()
         else:
             # end condition
-            # likely a widget, hide it !!
+            # likely a widget, show it !!
             window.show()
 
 
@@ -313,6 +313,8 @@ class MainWindow(QWidget):
         self.videoFrame.mouseMoveEvent = self.dragContinueCallBack
         self.videoFrame.mouseReleaseEvent = self.dragStopCallBack
 
+        self.videoFrame.resizeEvent = self.handleVideoFrameResize
+
         # setup up signals and slots
         self.ui.loadVideo.clicked.connect(self.openVideo)
         self.ui.playPause.clicked.connect(self.playPause)
@@ -338,6 +340,10 @@ class MainWindow(QWidget):
         # setup refreshRate of all windows
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
+
+    # handle videoFrame resize event
+    def handleVideoFrameResize(self, ResizeEvent):
+        self.videoFrameCropWindow = QRect(0, 0, self.ui.VideoFrame.width(), self.ui.VideoFrame.height())
 
     def handleGrayScaleConv(self):
         if self.ui.convertGrayScale.isChecked():
@@ -444,6 +450,9 @@ class MainWindow(QWidget):
 
             self.playPauseButton.setText("Pause")
             self.refreshTimer.start(1000)
+
+            # enable Preview Window
+            self.showWindowsRecursive(self.ui.previewWindow)
 
     def paintEvent(self, paintRegion):
         if not self.refreshTimer.isActive():

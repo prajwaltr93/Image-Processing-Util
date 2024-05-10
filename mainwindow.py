@@ -142,9 +142,9 @@ class WorkerThread(QThread):
             
             index += 1
 
-            if not (index % 3 == 0):
-                csvTipRootDataHandle.flush()
-                continue
+            # if not (index % 3 == 0):
+            #     csvTipRootDataHandle.flush()
+            #     continue
 
             if not ret:
                 break
@@ -386,6 +386,14 @@ class MainWindow(QWidget):
         # on clicking abort export
         self.ui.cancelButton.clicked.connect(self.stopExport)
 
+        # self.ui.cropButton.setChecked(True)
+        # self.ui.convertGrayScale.setChecked(True)
+        # self.ui.applyThresholdButton.setChecked(True)
+        self.ui.thresholdSlider.setValue(38)
+
+        # self.moveStart = QPoint(1089, 407)
+        # self.moveStop = QPoint(1610, 699)
+
     def stopExport(self):
         if isinstance(self.workerThread, QThread):
             self.workerThread.terminate()
@@ -489,7 +497,7 @@ class MainWindow(QWidget):
 
     def openVideo(self):
         self.fileName, _ = QFileDialog.getOpenFileName(self, "Open Video", "", "Video Files (*.mp4 *.avi *.mkv)")
-        self.fileName = "D:\\point detection algorithm implementation-python\\750.mp4"
+        # self.fileName = "D:\\point detection algorithm implementation-python\\750_trimmed.mp4"
         if self.fileName != '':
             self.video = cv2.VideoCapture(self.fileName)
             frame_width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))

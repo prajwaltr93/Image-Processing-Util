@@ -56,19 +56,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="exportVideo">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Export Data</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="playPause">
            <property name="maximumSize">
             <size>
@@ -266,6 +253,12 @@
          </item>
          <item>
           <widget class="QLabel" name="PreviewWindow">
+           <property name="minimumSize">
+            <size>
+             <width>350</width>
+             <height>250</height>
+            </size>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -274,72 +267,91 @@
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="exportDataWindow">
+        <layout class="QVBoxLayout" name="exportDataWindowParent">
          <item>
-          <widget class="QLabel" name="exportDataText">
-           <property name="font">
-            <font>
-             <pointsize>9</pointsize>
-             <bold>true</bold>
-            </font>
-           </property>
+          <widget class="QCheckBox" name="exportData">
            <property name="text">
             <string>Export Data</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="exportDataWindow_2">
+          <layout class="QVBoxLayout" name="exportDataWindow">
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_15">
              <item>
-              <widget class="QCheckBox" name="contourDataEachFrame_4">
+              <widget class="QCheckBox" name="contourDataEachFrame">
                <property name="text">
                 <string>Export Contour Data of each Frame (.csv)</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="tipRootOverlayVideo_4">
+              <widget class="QCheckBox" name="tipRootOverlayVideo">
                <property name="text">
                 <string>Export modified video with Tip/Root overlay (.mp4) (ffmeg)</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="tipRootCoordinates_4">
+              <widget class="QCheckBox" name="tipRootCoordinates">
                <property name="text">
                 <string>Export Data of Tip/Root Co-ordinates vs Time (.csv)</string>
                </property>
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <layout class="QHBoxLayout" name="multiProcLayout">
                <item>
-                <widget class="QCheckBox" name="multiProcessing_4">
+                <widget class="QCheckBox" name="multiProcessing">
                  <property name="text">
                   <string>Use Multi Processing</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="multiProcValues_4"/>
+                <widget class="QComboBox" name="multiProcValues"/>
                </item>
               </layout>
              </item>
             </layout>
            </item>
            <item>
+            <widget class="QProgressBar" name="progressBar">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="value">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
              <item>
-              <widget class="QPushButton" name="exportButton_4">
+              <widget class="QPushButton" name="exportButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Export </string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="cancelButton_4">
+              <widget class="QPushButton" name="cancelButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Cancel</string>
                </property>

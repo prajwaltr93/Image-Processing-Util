@@ -65,10 +65,6 @@ class CustomDialog(QDialog):
         # ^_____^
         self.parent = parent
 
-        # populate multi proc values
-        cpus = multiprocessing.cpu_count()
-        cpuValues = [str(i) for i in range(1, cpus + 1)]
-        self.customDialogUI.multiProcValues.addItems(cpuValues)
 
 
     def execAndCollect(self):
@@ -262,21 +258,13 @@ class MainWindow(QWidget):
         self.grayScale = False
         self.cropConfirmed = False
 
-        # # TODO: improve this hardcoded list
-        # self.nonExclusiveButtonsList = [self.ui.convertGrayScale, self.ui.skeletonize, self.ui.showContours, self.ui.cropButton, self.ui.applyThresholdButton]
-
-        # self.nonExclusiveButtonsBG = QButtonGroup(self)
-        # for button in self.nonExclusiveButtonsList:
-        #     self.nonExclusiveButtonsBG.addButton(button)
-        # self.nonExclusiveButtonsBG.setExclusive(False)
-
         self.dragStart = QPoint()
         self.dragStop = QPoint()
 
         self.moveStart = QPoint()
         self.moveStop = QPoint()
 
-        self.diffPoint = None
+        self.diffPoint = QPoint()
 
         previewPen = QPen(QColor("green"))
         previewPen.setWidth(10)
@@ -303,6 +291,7 @@ class MainWindow(QWidget):
         # hide Preview and Export Window
         self.hideWindowsRecursive(self.ui.previewWindow)
         self.hideWindowsRecursive(self.ui.exportDataWindow)
+        self.ui.exportData.clicked.connect(self.handleExportCallBack)
 
         # '''
         self.playPauseButton = self.ui.playPause
@@ -333,13 +322,18 @@ class MainWindow(QWidget):
         self.ui.cancelCrop.clicked.connect(self.cancelCrop)
 
         # populate combo box
-        contourOptions = ["Tip", "Root"]
+        contourOptions = ["Tip", "Root", "All"]
         self.ui.tipOrRootSelector.addItems(contourOptions)
 
         # '''
         # setup refreshRate of all windows
         self.refreshTimer = QTimer(self)
         self.refreshTimer.timeout.connect(self.update)
+
+        # populate multi proc values
+        cpus = multiprocessing.cpu_count()
+        cpuValues = [str(i) for i in range(1, cpus + 1)]
+        self.ui.multiProcValues.addItems(cpuValues)
 
     # handle videoFrame resize event
     def handleVideoFrameResize(self, ResizeEvent):
@@ -356,6 +350,12 @@ class MainWindow(QWidget):
             self.showWindowsRecursive(self.ui.cropSelectWindow)
         else:
             self.hideWindowsRecursive(self.ui.cropSelectWindow)
+
+    def handleExportCallBack(self):
+        if self.ui.exportData.isChecked():
+            self.showWindowsRecursive(self.ui.exportDataWindow)
+        else:
+            self.hideWindowsRecursive(self.ui.exportDataWindow)
 
     def thresholdValueChanged(self, value):
         self.ui.thresholdValue.setText(str(value))
@@ -390,43 +390,38 @@ class MainWindow(QWidget):
         if event.button() == Qt.LeftButton:
             if self.ui.cropButton.isChecked():
                 if checkNullPoint(self.moveStart):
-                    # update manual point selecter
+                    # first point hasn't been selected yet. capture that !
                     self.moveStart = event.pos()
                     # but account for dragged video frame, it would have moved self.dx and self.dy
                     if not checkNullPoint(self.diffPoint):
                         # TODO: ironically this is setting x,y, width, height. remember this behaviour or fix it (●'◡'●)
                         self.moveStart += self.diffPoint
+
+                    # update manual point selecter
                     self.ui.pointSelect1X.setValue(self.moveStart.x())
                     self.ui.pointSelect1Y.setValue(self.moveStart.y())
                 else:
-                    # update manual point selecter,
+                    # we have a first point, let's get the second 
                     self.moveStop = event.pos()
                     # but account for dragged video frame, it would have moved self.dx and self.dy
                     if not checkNullPoint(self.diffPoint):
                         # TODO: ironically this is setting x,y, width, height. remember this behaviour or fix it (●'◡'●)
                         self.moveStop += (self.diffPoint - self.moveStart)
-
+                    # update manual point selecter,
                     self.ui.pointSelect2X.setValue(self.moveStop.x())
                     self.ui.pointSelect2Y.setValue(self.moveStop.y())
 
     def dragContinueCallBack(self, event):
         if event.buttons() & Qt.MouseButton.RightButton:
             self.dragStop = event.pos()
-        # else:
-        # if event.buttons() & Qt.MouseButton.LeftButton:
-        #     # hovering after selecting start crop point
-        #     self.moveEnd = event.pos()
 
     def dragStopCallBack(self, event):
         if event.button() == Qt.MouseButton.RightButton:
             self.dragStop = event.pos()
-        # if event.button() == Qt.MouseButton.LeftButton:
-        #     self.moveEnd = event.pos()
 
     def playPause(self):
         if self.fileName is None:
             return
-
         if self.playPauseButton.text() == "Play":
             self.refreshTimer.start()
             self.playPauseButton.setText("Pause")
@@ -465,12 +460,13 @@ class MainWindow(QWidget):
         ret, frame = self.video.read()
         if ret:
             # set image to actual Windows
-            height, width, channel = frame.shape
+            height, width, _ = frame.shape
 
             if self.ui.convertGrayScale.isChecked():
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 bits = width
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
+
                 if self.ui.applyThresholdButton.isChecked():
                     _, frame = cv2.threshold(frame, int(self.ui.thresholdSlider.value()), 255, cv2.THRESH_BINARY)
                     pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_Grayscale8))
@@ -485,19 +481,22 @@ class MainWindow(QWidget):
                         # skeletonize after cropping for better results
                         if self.ui.skeletonize.isChecked():
                             frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
+
                         contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
                     # paint all contours on to the screen
                     contourPainter = QPainter()
                     contourPainter.begin(pixmap)
                     contourPainter.setPen(self.cropPreviewPen)
 
-                    # for contour in contours:
-                    #     for point in contour:
-                    #         point = point[0]
-                    #         if self.ui.cropButton.isChecked():
-                    #             point[0] += self.moveStart.x()
-                    #             point[1] += self.moveStart.y()
-                    #         contourPainter.drawEllipse(QPoint(point[0], point[1]), 1, 1)
+                    if self.ui.tipOrRootSelector.currentText() == "All":
+                        for contour in contours:
+                            for point in contour:
+                                point = point[0]
+                                if self.ui.cropButton.isChecked():
+                                    point[0] += self.moveStart.x()
+                                    point[1] += self.moveStart.y()
+                                contourPainter.drawEllipse(QPoint(point[0], point[1]), 1, 1)
 
                     # while drawing circles, account for Tip or Root
                     if self.ui.tipOrRootSelector.currentText() == "Tip":
@@ -507,37 +506,30 @@ class MainWindow(QWidget):
                         # selectedPoint = contours[0][0][0]
                         selectedPoint = findRoot(contours)
 
-                    # print(selectedPoint, self.ui.tipOrRootSelector.currentText())
-                    selectedPoint[0] += self.moveStart.x()
-                    selectedPoint[1] += self.moveStart.y()
+                    if self.ui.tipOrRootSelector.currentText() != "All":
+                        # Tip or GROOOT
+                        selectedPoint[0] += self.moveStart.x()
+                        selectedPoint[1] += self.moveStart.y()
 
-                    contourPainter.setPen(self.tipMarkerPen)
-                    contourPainter.drawEllipse(QPoint(selectedPoint[0], selectedPoint[1]), 1, 1)
+                        contourPainter.setPen(self.tipMarkerPen)
+                        contourPainter.drawEllipse(QPoint(selectedPoint[0], selectedPoint[1]), 1, 1)
 
                     contourPainter.end()
-
             else:
+                # just plain vanilla image as is
                 bits = 3 * width
                 pixmap = QPixmap(QImage(frame.data, width, height, bits, QImage.Format_BGR888))
 
             # set Image to video Frame
             self.diffPoint = self.dragStart - self.dragStop
 
-            # crop has been selected, crop and resize instead
             if self.cropConfirmed:
-                # self.ui.videoFrame.setPixmap(pixmap.copy(QRect(self.moveStart, self.moveStop)).scaled(self.videoFrame.width(), self.videoFrame.height()))
+                # crop has been selected, crop and resize instead
                 self.ui.VideoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()).scaled(self.videoFrame.width(), self.videoFrame.height()))
-                # self.ui.videoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()))
-                # self.ui.videoFrame.setPixmap(pixmap.copy(0, 0, 600, 600).scaled(self.videoFrame.width(), self.videoFrame.height()))
             else:
                 self.ui.VideoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(self.diffPoint)))
-            # this is slow, TODO: why ?, anchors the image to top left
-            # videoFramePainter = QPainter()
-            # videoFramePainter.begin(self)
-            # videoFramePainter.drawPixmap(QPoint(0, 0), pixmap.copy(self.videoFrameCropWindow.translated(diffPoint)))
-            # videoFramePainter.end()
 
-            # Preview Window
+            # Preview Window, get a copy of current videoFrame
             newCropWindowMarker = QRect(self.videoFrameCropWindow)
 
             if not checkNullPoint(self.diffPoint):
@@ -551,26 +543,21 @@ class MainWindow(QWidget):
             previewPainter.begin(copyCurrentFrame)
             previewPainter.setPen(self.previewPen)
             previewPainter.drawRect(newCropWindowMarker)
-
-            # show the drag line
-            # if self.dragStart and self.dragStop:
-            #     previewPainter.drawLine(self.dragStart, self.dragStop)
-
             previewPainter.end()
 
-            # draw crop rectangle
+            # draw crop rectangle, if selected
             if self.ui.cropButton.isChecked():
                 if not checkNullPoint(self.moveStart) and not checkNullPoint(self.moveStop):
                     cropPreviewPainter = QPainter()
                     cropPreviewPainter.begin(copyCurrentFrame)
                     cropPreviewPainter.setPen(self.cropPreviewPen)
-                    # cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
                     cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y())
                     cropPreviewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())
-
             self.previewWindow.setPixmap(copyCurrentFrame)
+
+        # end of painting pipeline
         return
 
 if __name__ == "__main__":

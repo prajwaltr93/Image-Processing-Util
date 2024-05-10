@@ -16,8 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
-    QHBoxLayout, QLabel, QPushButton, QSizePolicy,
-    QSlider, QSpinBox, QVBoxLayout, QWidget)
+    QHBoxLayout, QLabel, QProgressBar, QPushButton,
+    QSizePolicy, QSlider, QSpinBox, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -45,12 +46,6 @@ class Ui_MainWindow(object):
         self.loadVideo.setMaximumSize(QSize(16777215, 20))
 
         self.horizontalLayout_2.addWidget(self.loadVideo)
-
-        self.exportVideo = QPushButton(MainWindow)
-        self.exportVideo.setObjectName(u"exportVideo")
-        self.exportVideo.setMaximumSize(QSize(16777215, 20))
-
-        self.horizontalLayout_2.addWidget(self.exportVideo)
 
         self.playPause = QPushButton(MainWindow)
         self.playPause.setObjectName(u"playPause")
@@ -210,80 +205,95 @@ class Ui_MainWindow(object):
 
         self.PreviewWindow = QLabel(MainWindow)
         self.PreviewWindow.setObjectName(u"PreviewWindow")
+        self.PreviewWindow.setMinimumSize(QSize(350, 250))
 
         self.previewWindow.addWidget(self.PreviewWindow)
 
 
         self.optionsLayout.addLayout(self.previewWindow)
 
+        self.exportDataWindowParent = QVBoxLayout()
+        self.exportDataWindowParent.setObjectName(u"exportDataWindowParent")
+        self.exportData = QCheckBox(MainWindow)
+        self.exportData.setObjectName(u"exportData")
+
+        self.exportDataWindowParent.addWidget(self.exportData)
+
         self.exportDataWindow = QVBoxLayout()
         self.exportDataWindow.setObjectName(u"exportDataWindow")
-        self.exportDataText = QLabel(MainWindow)
-        self.exportDataText.setObjectName(u"exportDataText")
-        font1 = QFont()
-        font1.setPointSize(9)
-        font1.setBold(True)
-        self.exportDataText.setFont(font1)
-
-        self.exportDataWindow.addWidget(self.exportDataText)
-
-        self.exportDataWindow_2 = QVBoxLayout()
-        self.exportDataWindow_2.setObjectName(u"exportDataWindow_2")
         self.verticalLayout_15 = QVBoxLayout()
         self.verticalLayout_15.setObjectName(u"verticalLayout_15")
-        self.contourDataEachFrame_4 = QCheckBox(MainWindow)
-        self.contourDataEachFrame_4.setObjectName(u"contourDataEachFrame_4")
+        self.contourDataEachFrame = QCheckBox(MainWindow)
+        self.contourDataEachFrame.setObjectName(u"contourDataEachFrame")
 
-        self.verticalLayout_15.addWidget(self.contourDataEachFrame_4)
+        self.verticalLayout_15.addWidget(self.contourDataEachFrame)
 
-        self.tipRootOverlayVideo_4 = QCheckBox(MainWindow)
-        self.tipRootOverlayVideo_4.setObjectName(u"tipRootOverlayVideo_4")
+        self.tipRootOverlayVideo = QCheckBox(MainWindow)
+        self.tipRootOverlayVideo.setObjectName(u"tipRootOverlayVideo")
 
-        self.verticalLayout_15.addWidget(self.tipRootOverlayVideo_4)
+        self.verticalLayout_15.addWidget(self.tipRootOverlayVideo)
 
-        self.tipRootCoordinates_4 = QCheckBox(MainWindow)
-        self.tipRootCoordinates_4.setObjectName(u"tipRootCoordinates_4")
+        self.tipRootCoordinates = QCheckBox(MainWindow)
+        self.tipRootCoordinates.setObjectName(u"tipRootCoordinates")
 
-        self.verticalLayout_15.addWidget(self.tipRootCoordinates_4)
+        self.verticalLayout_15.addWidget(self.tipRootCoordinates)
 
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.multiProcessing_4 = QCheckBox(MainWindow)
-        self.multiProcessing_4.setObjectName(u"multiProcessing_4")
+        self.multiProcLayout = QHBoxLayout()
+        self.multiProcLayout.setObjectName(u"multiProcLayout")
+        self.multiProcessing = QCheckBox(MainWindow)
+        self.multiProcessing.setObjectName(u"multiProcessing")
 
-        self.horizontalLayout_9.addWidget(self.multiProcessing_4)
+        self.multiProcLayout.addWidget(self.multiProcessing)
 
-        self.multiProcValues_4 = QComboBox(MainWindow)
-        self.multiProcValues_4.setObjectName(u"multiProcValues_4")
+        self.multiProcValues = QComboBox(MainWindow)
+        self.multiProcValues.setObjectName(u"multiProcValues")
 
-        self.horizontalLayout_9.addWidget(self.multiProcValues_4)
-
-
-        self.verticalLayout_15.addLayout(self.horizontalLayout_9)
+        self.multiProcLayout.addWidget(self.multiProcValues)
 
 
-        self.exportDataWindow_2.addLayout(self.verticalLayout_15)
+        self.verticalLayout_15.addLayout(self.multiProcLayout)
+
+
+        self.exportDataWindow.addLayout(self.verticalLayout_15)
+
+        self.progressBar = QProgressBar(MainWindow)
+        self.progressBar.setObjectName(u"progressBar")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.progressBar.sizePolicy().hasHeightForWidth())
+        self.progressBar.setSizePolicy(sizePolicy1)
+        self.progressBar.setValue(0)
+
+        self.exportDataWindow.addWidget(self.progressBar)
 
         self.horizontalLayout_10 = QHBoxLayout()
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.exportButton_4 = QPushButton(MainWindow)
-        self.exportButton_4.setObjectName(u"exportButton_4")
+        self.exportButton = QPushButton(MainWindow)
+        self.exportButton.setObjectName(u"exportButton")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.exportButton.sizePolicy().hasHeightForWidth())
+        self.exportButton.setSizePolicy(sizePolicy2)
 
-        self.horizontalLayout_10.addWidget(self.exportButton_4)
+        self.horizontalLayout_10.addWidget(self.exportButton)
 
-        self.cancelButton_4 = QPushButton(MainWindow)
-        self.cancelButton_4.setObjectName(u"cancelButton_4")
+        self.cancelButton = QPushButton(MainWindow)
+        self.cancelButton.setObjectName(u"cancelButton")
+        sizePolicy2.setHeightForWidth(self.cancelButton.sizePolicy().hasHeightForWidth())
+        self.cancelButton.setSizePolicy(sizePolicy2)
 
-        self.horizontalLayout_10.addWidget(self.cancelButton_4)
-
-
-        self.exportDataWindow_2.addLayout(self.horizontalLayout_10)
-
-
-        self.exportDataWindow.addLayout(self.exportDataWindow_2)
+        self.horizontalLayout_10.addWidget(self.cancelButton)
 
 
-        self.optionsLayout.addLayout(self.exportDataWindow)
+        self.exportDataWindow.addLayout(self.horizontalLayout_10)
+
+
+        self.exportDataWindowParent.addLayout(self.exportDataWindow)
+
+
+        self.optionsLayout.addLayout(self.exportDataWindowParent)
 
 
         self.mainWindow.addLayout(self.optionsLayout)
@@ -301,7 +311,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.VideoFrame.setText("")
         self.loadVideo.setText(QCoreApplication.translate("MainWindow", u"Load Video", None))
-        self.exportVideo.setText(QCoreApplication.translate("MainWindow", u"Export Data", None))
         self.playPause.setText(QCoreApplication.translate("MainWindow", u"Play", None))
         self.cropButton.setText(QCoreApplication.translate("MainWindow", u"Crop", None))
         self.point1Text.setText(QCoreApplication.translate("MainWindow", u"Point 1 (x1, y1)", None))
@@ -316,12 +325,12 @@ class Ui_MainWindow(object):
         self.skeletonize.setText(QCoreApplication.translate("MainWindow", u"Skeletonize", None))
         self.previewWindowText.setText(QCoreApplication.translate("MainWindow", u"Preview Window", None))
         self.PreviewWindow.setText("")
-        self.exportDataText.setText(QCoreApplication.translate("MainWindow", u"Export Data", None))
-        self.contourDataEachFrame_4.setText(QCoreApplication.translate("MainWindow", u"Export Contour Data of each Frame (.csv)", None))
-        self.tipRootOverlayVideo_4.setText(QCoreApplication.translate("MainWindow", u"Export modified video with Tip/Root overlay (.mp4) (ffmeg)", None))
-        self.tipRootCoordinates_4.setText(QCoreApplication.translate("MainWindow", u"Export Data of Tip/Root Co-ordinates vs Time (.csv)", None))
-        self.multiProcessing_4.setText(QCoreApplication.translate("MainWindow", u"Use Multi Processing", None))
-        self.exportButton_4.setText(QCoreApplication.translate("MainWindow", u"Export ", None))
-        self.cancelButton_4.setText(QCoreApplication.translate("MainWindow", u"Cancel", None))
+        self.exportData.setText(QCoreApplication.translate("MainWindow", u"Export Data", None))
+        self.contourDataEachFrame.setText(QCoreApplication.translate("MainWindow", u"Export Contour Data of each Frame (.csv)", None))
+        self.tipRootOverlayVideo.setText(QCoreApplication.translate("MainWindow", u"Export modified video with Tip/Root overlay (.mp4) (ffmeg)", None))
+        self.tipRootCoordinates.setText(QCoreApplication.translate("MainWindow", u"Export Data of Tip/Root Co-ordinates vs Time (.csv)", None))
+        self.multiProcessing.setText(QCoreApplication.translate("MainWindow", u"Use Multi Processing", None))
+        self.exportButton.setText(QCoreApplication.translate("MainWindow", u"Export ", None))
+        self.cancelButton.setText(QCoreApplication.translate("MainWindow", u"Cancel", None))
     # retranslateUi
 

@@ -96,7 +96,6 @@ class WorkerThread(QThread):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.parent = parent
 
     def setup(self, configDict):
         self.configDict = configDict
@@ -156,7 +155,7 @@ class WorkerThread(QThread):
 
             if self.exportTipCordinates:
                 # while drawing circles, account for Tip or Root
-                if self.parent.ui.tipOrRootSelector.currentText() == "Tip":
+                if self.configDict['tipOrRootSelection'] == "Tip":
                     # selectedPoint = contours[-1][0][0]
                     selectedPoint = findTip(contours)
                 else:
@@ -171,6 +170,10 @@ class WorkerThread(QThread):
 
             # update progress bar
             self.configDict['progressBarObject'].setValue((index/self.numFrames) * 100)
+
+        # close all file handles
+        if self.exportTipCordinates:
+            csvTipRootDataHandle.close()
 
         # notify parent
         self.finished.emit()

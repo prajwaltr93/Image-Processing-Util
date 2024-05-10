@@ -111,7 +111,6 @@ class WorkerThread(QThread):
 
         # process the video based on configured parameters, threshold, crop, grayscale and skeletonize
         # and extract data also the number of frames for progress bar
-
         if self.exportContourVideo:
             pass
 
@@ -119,7 +118,6 @@ class WorkerThread(QThread):
             csvTipRootDataHandle = open(f"output/{self.configDict['tipOrRootSelection']}.csv", "w", newline='')
             csvTipRootDataWriter = csv.writer(csvTipRootDataHandle)
 
-        # '''
         index = 0
         while True:
             ret, frame = self.videoCapture.read()
@@ -128,8 +126,9 @@ class WorkerThread(QThread):
                 break
             # TODO: use multi proc if configured
             # TODO: sanity check
+
             # set image to actual Windows
-            height, width, channel = frame.shape
+
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             _, frame = cv2.threshold(frame, int(self.configDict['thresholdValue']), 255, cv2.THRESH_BINARY)
             contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -169,24 +168,16 @@ class WorkerThread(QThread):
                 csvTipRootDataWriter.writerow(selectedPoint)
 
             index += 1
-            print("working")
 
             # update progress bar
             self.configDict['progressBarObject'].setValue((index/self.numFrames) * 100)
-        # '''
-
 
         # notify parent
         self.finished.emit()
 
 class MainWindow(QWidget):
 
-    def startExporting(self, exportContourData, exportContourVideo, exportTipCordinates, multiProcessing):
-        # start processing sequentially and a progress bar would be nice
-        print(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing)
-        # inflate a progress bar
-        customProgressBar = QProgressDialog("Exporting Data", "Abort Export", 0, 100, self)
-
+    def startExporting(self):
         if hasattr(self, "video"):
             # close the video handle and get a new one
             self.video.release()
@@ -197,20 +188,22 @@ class MainWindow(QWidget):
         videoCapture = cv2.VideoCapture(self.fileName)
 
         # prep a dict to carry all necessary information that is bound a MainWindow attributes
+        # '''
         configDict = {
-                "exportContourData" : exportContourData,
-                "exportContourVideo" : exportContourVideo,
-                "exportTipCordinates" : exportTipCordinates,
+                "exportContourData" : self.ui.contourDataEachFrame.isChecked(),
+                "exportContourVideo" : self.ui.tipRootOverlayVideo.isChecked(),
+                "exportTipCordinates" : self.ui.tipRootCoordinates.isChecked(),
                 "videoCaptureHandle" : videoCapture,
                 "thresholdValue" : self.ui.thresholdSlider.value(),
                 "moveStart" : self.moveStart,
                 "moveStop" : self.moveStop,
                 "tipOrRootSelection" : self.ui.tipOrRootSelector.currentText(),
-                "progressBarObject" : customProgressBar
+                "progressBarObject" : self.ui.progressBar
+                # TODO: multi processing
         }
+        # '''
 
         self.workerThread = WorkerThread(self)
-        # self.workerThread.setup(exportContourData, exportContourVideo, exportTipCordinates, multiProcessing, videoCapture)
         self.workerThread.setup(configDict)
         self.workerThread.finished.connect(self.onThreadFinished)
         self.workerThread.start()
@@ -334,6 +327,9 @@ class MainWindow(QWidget):
         cpus = multiprocessing.cpu_count()
         cpuValues = [str(i) for i in range(1, cpus + 1)]
         self.ui.multiProcValues.addItems(cpuValues)
+
+        # on clicking export
+        self.ui.exportButton.clicked.connect(self.startExporting)
 
     # handle videoFrame resize event
     def handleVideoFrameResize(self, ResizeEvent):

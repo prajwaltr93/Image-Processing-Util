@@ -1,13 +1,15 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, QProgressDialog, QDialog, QLayout
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QDialog, QLayout
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt, QThread, Signal
 import cv2
 import os
 import multiprocessing
 import csv
+from subprocess import Popen, PIPE
+from PIL import Image
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -41,12 +43,27 @@ def findTip(contours):
 def findRoot(contours):
     # assume first point to be the point of interest (pun intended :))
     tipPoint = contours[0][0][0]
+    min_x = float('inf')
+    max_y = -float('inf')
+    rootPoint = None
     for contour in contours:
         for point in contour:
             point = point[0]
-            if (point[0] < tipPoint[0] and point[1] > tipPoint[1]):
-                tipPoint = point
-    return tipPoint
+            if (point[0] < min_x or (point[0] == min_x and tipPoint[1] > max_y)):
+                min_x = point[0]
+                max_y = point[1]
+                rootPoint = point
+    return rootPoint 
+
+# def findRoot(contours):
+#     # assume first point to be the point of interest (pun intended :))
+#     tipPoint = contours[0][0][0]
+#     for contour in contours:
+#         for point in contour:
+#             point = point[0]
+#             if (point[0] < tipPoint[0] and point[1] > tipPoint[1]):
+#                 tipPoint = point
+#     return tipPoint
 
 class CustomDialog(QDialog):
     def __init__(self, parent):
@@ -106,7 +123,9 @@ class WorkerThread(QThread):
         self.exportTipCordinates = self.configDict["exportTipCordinates"]
         self.videoCapture = self.configDict["videoCaptureHandle"]
 
-        self.numFrames = self.videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.numFrames = self.videoCapture.get(cv2.CAP_PROP_FPS)
+
+        self.processHandle = self.configDict["processHandle"]
 
         # process the video based on configured parameters, threshold, crop, grayscale and skeletonize
         # and extract data also the number of frames for progress bar
@@ -119,7 +138,13 @@ class WorkerThread(QThread):
 
         index = 0
         while True:
-            ret, frame = self.videoCapture.read()
+            ret, originalFrame = self.videoCapture.read()
+            
+            index += 1
+
+            if not (index % 3 == 0):
+                csvTipRootDataHandle.flush()
+                continue
 
             if not ret:
                 break
@@ -127,11 +152,10 @@ class WorkerThread(QThread):
             # TODO: sanity check
 
             # set image to actual Windows
-
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            frame = cv2.cvtColor(originalFrame, cv2.COLOR_BGR2GRAY)
             _, frame = cv2.threshold(frame, int(self.configDict['thresholdValue']), 255, cv2.THRESH_BINARY)
             contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            frame = frame[self.configDict['moveStart'].y(): self.configDict['moveStart'].y() + self.configDict['moveStop'].y():, self.configDict['moveStart'].x(): self.configDict['moveStart'].x() + self.configDict['moveStop'].x()]
+            frame = frame[self.configDict['moveStart'].y(): self.configDict['moveStop'].y(), self.configDict['moveStart'].x(): self.configDict['moveStop'].x()]
 
             # skeletonize after cropping for better results
             frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
@@ -140,8 +164,9 @@ class WorkerThread(QThread):
             # find contours if selected
             if self.exportContourData:
                 # if cropped, find contours only within it
-                csvContourDataHandle = open(f"output/ContourData_Frame_{index}.csv", "w", newline='')
+                csvContourDataHandle = open(f"output/contour-data/ContourData_Frame_{index}.csv", "w", newline='')
                 csvContourDataWriter = csv.writer(csvContourDataHandle)
+
                 for contour in contours:
                     for point in contour:
                         point = point[0]
@@ -150,8 +175,6 @@ class WorkerThread(QThread):
                         csvContourDataWriter.writerow(point)
                 csvContourDataHandle.close()
 
-            if self.exportContourVideo:
-                pass
 
             if self.exportTipCordinates:
                 # while drawing circles, account for Tip or Root
@@ -164,9 +187,14 @@ class WorkerThread(QThread):
                     # print(selectedPoint, self.ui.tipOrRootSelector.currentText())
                 selectedPoint[0] += self.configDict['moveStart'].x()
                 selectedPoint[1] += self.configDict['moveStart'].y()
+                if self.exportContourVideo:
+                    cv2.circle(originalFrame, selectedPoint, 5, (0, 0, 255), -1)
+
                 csvTipRootDataWriter.writerow(selectedPoint)
 
-            index += 1
+            if self.exportContourVideo:
+                Image.fromarray(originalFrame).save(self.processHandle.stdin, 'JPEG')
+
 
             # update progress bar
             self.configDict['progressBarObject'].setValue((index/self.numFrames) * 100)
@@ -175,6 +203,8 @@ class WorkerThread(QThread):
         if self.exportTipCordinates:
             csvTipRootDataHandle.close()
 
+
+        self.videoCapture.release()
         # notify parent
         self.finished.emit()
 
@@ -188,7 +218,16 @@ class MainWindow(QWidget):
         if not os.path.isdir("output"):
             os.mkdir("output")
 
+        if not os.path.isdir("output/contour-data"):
+            os.mkdir("output/contour-data")
+
         videoCapture = cv2.VideoCapture(self.fileName)
+        self.frameRate = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
+
+        if self.ui.tipRootOverlayVideo.isChecked():
+            self.processHandle = Popen(['D:\\ffmpeg-binaries\\bin\\ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', f'{self.frameRate}', '-i', '-', '-vcodec', 'h264', '-r', f'{self.frameRate}', './output/output-video.mp4'], stdin=PIPE)
+        else:
+            self.processHandle = None
 
         # prep a dict to carry all necessary information that is bound a MainWindow attributes
         # '''
@@ -201,18 +240,25 @@ class MainWindow(QWidget):
                 "moveStart" : self.moveStart,
                 "moveStop" : self.moveStop,
                 "tipOrRootSelection" : self.ui.tipOrRootSelector.currentText(),
-                "progressBarObject" : self.ui.progressBar
+                "progressBarObject" : self.ui.progressBar,
                 # TODO: multi processing
+                "processHandle" : self.processHandle
         }
         # '''
 
+        # disable export while one is already running
+        self.ui.exportButton.setDisabled(True)
         self.workerThread = WorkerThread(self)
         self.workerThread.setup(configDict)
         self.workerThread.finished.connect(self.onThreadFinished)
         self.workerThread.start()
 
     def onThreadFinished(self):
-        print("Done :)")
+        self.ui.progressBar.setValue(0)
+        if self.processHandle:
+            self.processHandle.stdin.close()
+            self.processHandle.wait()
+        self.ui.exportButton.setDisabled(False)
 
     def hideWindowsRecursive(self, window):
         if isinstance(window, QLayout):
@@ -248,11 +294,14 @@ class MainWindow(QWidget):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        # set window title
+
         # Instance Attributes
         self.fileName = None
         self.currentFrame = None
         self.grayScale = False
         self.cropConfirmed = False
+        self.workerThread = None
 
         self.dragStart = QPoint()
         self.dragStop = QPoint()
@@ -334,6 +383,15 @@ class MainWindow(QWidget):
         # on clicking export
         self.ui.exportButton.clicked.connect(self.startExporting)
 
+        # on clicking abort export
+        self.ui.cancelButton.clicked.connect(self.stopExport)
+
+    def stopExport(self):
+        if isinstance(self.workerThread, QThread):
+            self.workerThread.terminate()
+            # TODO: wait while thread terminates
+            # also close necessary files, maybe under when clause
+
     # handle videoFrame resize event
     def handleVideoFrameResize(self, ResizeEvent):
         self.videoFrameCropWindow = QRect(0, 0, self.ui.VideoFrame.width(), self.ui.VideoFrame.height())
@@ -405,7 +463,8 @@ class MainWindow(QWidget):
                     # but account for dragged video frame, it would have moved self.dx and self.dy
                     if not checkNullPoint(self.diffPoint):
                         # TODO: ironically this is setting x,y, width, height. remember this behaviour or fix it (●'◡'●)
-                        self.moveStop += (self.diffPoint - self.moveStart)
+                        # self.moveStop += (self.diffPoint - self.moveStart)
+                        self.moveStop += self.diffPoint
                     # update manual point selecter,
                     self.ui.pointSelect2X.setValue(self.moveStop.x())
                     self.ui.pointSelect2Y.setValue(self.moveStop.y())
@@ -476,7 +535,8 @@ class MainWindow(QWidget):
                     if not self.ui.cropButton.isChecked():
                         contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     else:
-                        frame = frame[self.moveStart.y(): self.moveStop.y() + self.moveStart.y():, self.moveStart.x(): self.moveStart.x() + self.moveStop.x()]
+                        # frame = frame[self.moveStart.y(): self.moveStop.y() + self.moveStart.y(), self.moveStart.x(): self.moveStart.x() + self.moveStop.x()]
+                        frame = frame[self.moveStart.y(): self.moveStop.y(), self.moveStart.x(): self.moveStop.x()]
                         # skeletonize after cropping for better results
                         if self.ui.skeletonize.isChecked():
                             frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
@@ -524,7 +584,7 @@ class MainWindow(QWidget):
 
             if self.cropConfirmed:
                 # crop has been selected, crop and resize instead
-                self.ui.VideoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y()).scaled(self.videoFrame.width(), self.videoFrame.height()))
+                self.ui.VideoFrame.setPixmap(pixmap.copy(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y()).scaled(self.videoFrame.width(), self.videoFrame.height()))
             else:
                 self.ui.VideoFrame.setPixmap(pixmap.copy(self.videoFrameCropWindow.translated(self.diffPoint)))
 
@@ -550,7 +610,7 @@ class MainWindow(QWidget):
                     cropPreviewPainter = QPainter()
                     cropPreviewPainter.begin(copyCurrentFrame)
                     cropPreviewPainter.setPen(self.cropPreviewPen)
-                    cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x(), self.moveStop.y())
+                    cropPreviewPainter.drawRect(self.moveStart.x(), self.moveStart.y(), self.moveStop.x() - self.moveStart.x(), self.moveStop.y() - self.moveStart.y())
                     cropPreviewPainter.end()
 
             copyCurrentFrame = copyCurrentFrame.scaled(self.previewWindow.width(), self.previewWindow.height())

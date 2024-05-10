@@ -19,12 +19,16 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QHBoxLayout, QLabel, QProgressBar, QPushButton,
     QSizePolicy, QSlider, QSpinBox, QVBoxLayout,
     QWidget)
+import rc_resources
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1177, 714)
+        icon = QIcon()
+        icon.addFile(u":/icons/resources/app-icon.svg", QSize(), QIcon.Normal, QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         self.gridLayout = QGridLayout(MainWindow)
         self.gridLayout.setObjectName(u"gridLayout")
         self.mainWindow = QHBoxLayout()
@@ -308,7 +312,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Image Processing Util", None))
         self.VideoFrame.setText("")
         self.loadVideo.setText(QCoreApplication.translate("MainWindow", u"Load Video", None))
         self.playPause.setText(QCoreApplication.translate("MainWindow", u"Play", None))

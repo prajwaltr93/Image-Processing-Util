@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, QProgressDialog, QDialog
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QButtonGroup, QProgressDialog, QDialog, QLayout
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt, QThread, Signal
 import cv2
@@ -222,6 +222,35 @@ class MainWindow(QWidget):
     def onThreadFinished(self):
         print("Done :)")
 
+    def hideWindowsRecursive(self, window):
+        if isinstance(window, QLayout):
+            # handle all Children
+            for child in reversed(range(window.count())):
+                childInstance = window.itemAt(child)
+                if isinstance(childInstance, QLayout):
+                    self.hideWindowsRecursive(childInstance)
+                else:
+                    childInstance.widget().hide()
+        else:
+            # end condition
+            # likely a widget, hide it !!
+            window.hide()
+
+    def showWindowsRecursive(self, window):
+        if isinstance(window, QLayout):
+            # handle all Children
+            for child in reversed(range(window.count())):
+                childInstance = window.itemAt(child)
+                if isinstance(childInstance, QLayout):
+                    self.showWindowsRecursive(childInstance)
+                else:
+                    childInstance.widget().show()
+        else:
+            # end condition
+            # likely a widget, hide it !!
+            window.show()
+
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
@@ -234,13 +263,13 @@ class MainWindow(QWidget):
         self.cropVisible = False
         self.cropConfirmed = False
 
-        # TODO: improve this hardcoded list
-        self.nonExclusiveButtonsList = [self.ui.convertGrayScale, self.ui.skeletonize, self.ui.showContours, self.ui.cropButton, self.ui.applyThresholdButton]
+        # # TODO: improve this hardcoded list
+        # self.nonExclusiveButtonsList = [self.ui.convertGrayScale, self.ui.skeletonize, self.ui.showContours, self.ui.cropButton, self.ui.applyThresholdButton]
 
-        self.nonExclusiveButtonsBG = QButtonGroup(self)
-        for button in self.nonExclusiveButtonsList:
-            self.nonExclusiveButtonsBG.addButton(button)
-        self.nonExclusiveButtonsBG.setExclusive(False)
+        # self.nonExclusiveButtonsBG = QButtonGroup(self)
+        # for button in self.nonExclusiveButtonsList:
+        #     self.nonExclusiveButtonsBG.addButton(button)
+        # self.nonExclusiveButtonsBG.setExclusive(False)
 
         self.dragStart = QPoint()
         self.dragStop = QPoint()
@@ -262,16 +291,29 @@ class MainWindow(QWidget):
         tipMarkerPen.setWidth(10)
         self.tipMarkerPen = tipMarkerPen
 
-        self.videoFrameCropWindow = QRect(0, 0, self.ui.videoFrame.width(), self.ui.videoFrame.height())
+        self.videoFrameCropWindow = QRect(0, 0, self.ui.VideoFrame.width(), self.ui.VideoFrame.height())
 
+        # hide crop options for now
+        self.hideWindowsRecursive(self.ui.cropSelectWindow)
+        self.ui.cropButton.clicked.connect(self.handleCropClick)
+
+        # hide applyThresholdwindow for now
+        self.hideWindowsRecursive(self.ui.applyThresholdWindow)
+        self.ui.convertGrayScale.clicked.connect(self.handleGrayScaleConv)
+
+        # hide Preview and Export Window
+        self.hideWindowsRecursive(self.ui.previewWindow)
+        self.hideWindowsRecursive(self.ui.exportDataWindow)
+
+        '''
         self.hideCropGUIAttributes()
 
         self.playPauseButton = self.ui.playPause
 
 
-        self.previewWindow = self.ui.previewWindow
+        self.previewWindow = self.ui.PreviewWindow
 
-        self.videoFrame = self.ui.videoFrame
+        self.videoFrame = self.ui.VideoFrame
 
         self.videoFrame.mousePressEvent = self.dragStartCallBack
 
@@ -298,12 +340,9 @@ class MainWindow(QWidget):
         self.ui.confirmCrop.clicked.connect(self.confirmCrop)
         self.ui.cancelCrop.clicked.connect(self.cancelCrop)
 
-        # setup refreshRate of all windows
-        self.refreshTimer = QTimer(self)
-        self.refreshTimer.timeout.connect(self.update)
 
-        # hide show contours combo box
-        self.ui.tipOrRootSelector.hide()
+        # # hide show contours combo box
+        # self.ui.tipOrRootSelector.hide()
 
         # populate combo box
         contourOptions = ["Tip", "Root"]
@@ -312,12 +351,30 @@ class MainWindow(QWidget):
 
         self.ui.showContours.clicked.connect(self.showTipOrRoot)
 
-        # customize the QDialog
-        customDialog = CustomDialog(self)
-        # customDialog.exec()
+        # hide preview window, show on load of valid video
 
-        self.ui.exportVideo.clicked.connect(customDialog.execAndCollect)
+        # hide export window
 
+        '''
+        # setup refreshRate of all windows
+        self.refreshTimer = QTimer(self)
+        self.refreshTimer.timeout.connect(self.update)
+
+    # def hidePreviewWindow(self):
+    #     self.ui.prev
+
+    def handleGrayScaleConv(self):
+        if self.ui.convertGrayScale.isChecked():
+            self.showWindowsRecursive(self.ui.applyThresholdWindow)
+        else:
+            self.hideWindowsRecursive(self.ui.applyThresholdWindow)
+
+
+    def handleCropClick(self):
+        if self.ui.cropButton.isChecked():
+            self.showWindowsRecursive(self.ui.cropSelectWindow)
+        else:
+            self.hideWindowsRecursive(self.ui.cropSelectWindow)
 
     def showTipOrRoot(self):
         if self.ui.tipOrRootSelector.isVisible():

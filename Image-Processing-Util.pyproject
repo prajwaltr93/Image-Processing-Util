@@ -2,7 +2,6 @@
     "files": [
         "mainwindow.py",
         "form.ui",
-        "CustomDialogForm.ui",
         "resources.qrc"
     ]
 }

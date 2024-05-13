@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QDialog, QLayout
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLayout
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QPen
 from PySide6.QtCore import QTimer, QRect, QPoint, Qt, QThread, Signal
 import cv2
@@ -16,8 +16,6 @@ from PIL import Image
 #     pyside6-uic form.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
-from ui_CustomDialogForm import Ui_CustomDialogForm
-from ui_ExportProgressBar import Ui_ExportProgressBar
 
 def checkNullPoint(point):
     # fun fact: `is` checks the id() of operands (indirectly memory address), since there can only be one None, two operands
@@ -55,59 +53,6 @@ def findRoot(contours):
                 rootPoint = point
     return rootPoint 
 
-# def findRoot(contours):
-#     # assume first point to be the point of interest (pun intended :))
-#     tipPoint = contours[0][0][0]
-#     for contour in contours:
-#         for point in contour:
-#             point = point[0]
-#             if (point[0] < tipPoint[0] and point[1] > tipPoint[1]):
-#                 tipPoint = point
-#     return tipPoint
-
-class CustomDialog(QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        # halt parent refresh timer
-        if parent.refreshTimer.isActive():
-            parent.refreshTimer.stop()
-
-        self.customDialogUI = Ui_CustomDialogForm()
-        self.customDialogUI.setupUi(self)
-
-        # setup accept and reject calls
-        self.customDialogUI.exportButton.clicked.connect(self.accept)
-        self.customDialogUI.cancelButton.clicked.connect(self.reject)
-
-        # ^_____^
-        self.parent = parent
-
-
-
-    def execAndCollect(self):
-        result = self.open()
-        if result == QDialog.DialogCode.Accepted:
-            # grab all selections and pass it on to parent
-            self.parent.startExporting(self.customDialogUI.contourDataEachFrame.isChecked(),
-                                        self.customDialogUI.tipRootOverlayVideo.isChecked(),
-                                        self.customDialogUI.tipRootCoordinates.isChecked(),
-                                        int(self.customDialogUI.multiProcValues.currentText()) if self.customDialogUI.multiProcessing.isChecked() else 0)
-        else:
-            # cancelled export, start doing what you were doing
-            if not self.parent.refreshTimer.isActive() and hasattr(self.parent, "video"):
-                self.parent.refreshTimer.start()
-
-class CustomProgressBar(QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.exportProgressBar = Ui_ExportProgressBar
-        self.exportProgressBar.setupUi(self)
-
-        # TODO: connect cancel export button
-
-    def updateProgressBar(self, value):
-        self.exportProgressBar.progressBar.setValue(value)
-
 class WorkerThread(QThread):
     finished = Signal()
     updateProgress = Signal(int)
@@ -141,11 +86,6 @@ class WorkerThread(QThread):
         while True:
             ret, originalFrame = self.videoCapture.read()
             
-            index += 1
-
-            # if not (index % 3 == 0):
-            #     csvTipRootDataHandle.flush()
-            #     continue
 
             if not ret:
                 break
@@ -200,10 +140,11 @@ class WorkerThread(QThread):
             # update progress bar
             self.updateProgress.emit(index)
 
+            index += 1
+
         # close all file handles
         if self.exportTipCordinates:
             csvTipRootDataHandle.close()
-
 
         self.videoCapture.release()
         # notify parent

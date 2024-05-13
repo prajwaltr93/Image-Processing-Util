@@ -3,6 +3,7 @@
 venv/
 Image-Processing-Util.pyproject.user
 output/
+.qtcreator/
 
 *~
 *.autosave

@@ -261,6 +261,7 @@ class MainWindow(QWidget):
         self.ui.exportButton.setDisabled(False)
 
     def hideWindowsRecursive(self, window):
+        # DFS !
         if isinstance(window, QLayout):
             # handle all Children
             for child in reversed(range(window.count())):
@@ -275,6 +276,7 @@ class MainWindow(QWidget):
             window.hide()
 
     def showWindowsRecursive(self, window):
+        # DFS !
         if isinstance(window, QLayout):
             # handle all Children
             for child in reversed(range(window.count())):

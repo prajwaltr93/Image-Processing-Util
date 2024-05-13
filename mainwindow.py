@@ -30,13 +30,15 @@ def checkNullPoint(point):
 
 def findTip(contours):
     # assume first point to be the point of interest (pun intended :))
-    tipPoint = contours[0][0][0]
+    max_x = -1
+    tip_point = None
     for contour in contours:
         for point in contour:
-            point = point[0]
-            if (point[0] > tipPoint[0] and point[1] < tipPoint[1]):
-                tipPoint = point
-    return tipPoint
+            x, y = point[0]
+            if x > max_x or (x == max_x and y < tip_point[1]):
+                max_x = x
+                tip_point = [x, y]
+    return tip_point
 
 def findRoot(contours):
     # assume first point to be the point of interest (pun intended :))

@@ -110,6 +110,7 @@ class CustomProgressBar(QDialog):
 
 class WorkerThread(QThread):
     finished = Signal()
+    updateProgress = Signal(int)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -197,7 +198,7 @@ class WorkerThread(QThread):
 
 
             # update progress bar
-            self.configDict['progressBarObject'].setValue((index/self.numFrames) * 100)
+            self.updateProgress.emit(index)
 
         # close all file handles
         if self.exportTipCordinates:
@@ -209,6 +210,9 @@ class WorkerThread(QThread):
         self.finished.emit()
 
 class MainWindow(QWidget):
+
+    def updateProgressBar(self, index):
+        self.ui.progressBar.setValue((index/self.numFrames) * 100)
 
     def startExporting(self):
         if hasattr(self, "video"):
@@ -222,7 +226,8 @@ class MainWindow(QWidget):
             os.mkdir("output/contour-data")
 
         videoCapture = cv2.VideoCapture(self.fileName)
-        self.frameRate = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.frameRate = videoCapture.get(cv2.CAP_PROP_FPS)
+        self.numFrames = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
 
         if self.ui.tipRootOverlayVideo.isChecked():
             self.processHandle = Popen(['D:\\ffmpeg-binaries\\bin\\ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', f'{self.frameRate}', '-i', '-', '-vcodec', 'h264', '-r', f'{self.frameRate}', './output/output-video.mp4'], stdin=PIPE)
@@ -251,6 +256,7 @@ class MainWindow(QWidget):
         self.workerThread = WorkerThread(self)
         self.workerThread.setup(configDict)
         self.workerThread.finished.connect(self.onThreadFinished)
+        self.workerThread.updateProgress.connect(self.updateProgressBar)
         self.workerThread.start()
 
     def onThreadFinished(self):

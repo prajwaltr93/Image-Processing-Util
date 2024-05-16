@@ -6,226 +6,375 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>720</height>
+    <width>1177</width>
+    <height>714</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Image Processing Util</string>
   </property>
-  <widget class="QLabel" name="videoFrame">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>0</y>
-     <width>1011</width>
-     <height>711</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>1030</x>
-     <y>0</y>
-     <width>256</width>
-     <height>711</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <item>
-     <widget class="QWidget" name="widget_2" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/resources/app-icon.svg</normaloff>:/icons/resources/app-icon.svg</iconset>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="mainWindow">
+     <item>
+      <widget class="QLabel" name="VideoFrame">
+       <property name="minimumSize">
+        <size>
+         <width>800</width>
+         <height>600</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100000</width>
+         <height>100000</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="optionsLayout">
        <item>
-        <widget class="QRadioButton" name="convertGrayScale">
-         <property name="text">
-          <string>Convert to Gray Scale</string>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>0</number>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="skeletonize">
-         <property name="text">
-          <string>Skeletonize</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="showContours">
-         <property name="text">
-          <string>Show Contours</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>20</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Threshold</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>20</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>N/A</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QSlider" name="horizontalSlider">
+          <widget class="QPushButton" name="loadVideo">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
              <height>20</height>
             </size>
            </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+           <property name="text">
+            <string>Load Video</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="playPause">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Play</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QRadioButton" name="cropButton">
-         <property name="text">
-          <string>Crop</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="pointSelect1">
+        <layout class="QVBoxLayout" name="CropSelectWindow">
          <item>
-          <widget class="QSpinBox" name="pointSelect1X"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_3">
+          <widget class="QCheckBox" name="cropButton">
            <property name="text">
-            <string>Point 1 (x1, y1)</string>
+            <string>Crop</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="pointSelect1Y"/>
+          <layout class="QVBoxLayout" name="cropSelectWindow">
+           <item>
+            <layout class="QHBoxLayout" name="pointSelect1">
+             <item>
+              <widget class="QSpinBox" name="pointSelect1X"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="point1Text">
+               <property name="text">
+                <string>Point 1 (x1, y1)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="pointSelect1Y"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="pointSelect2_2">
+             <item>
+              <widget class="QSpinBox" name="pointSelect2X"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="point2Text">
+               <property name="text">
+                <string>Point 2 (x1, y1)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="pointSelect2Y"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="cancelCrop">
+               <property name="text">
+                <string>Cancel Crop</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="confirmCrop">
+               <property name="text">
+                <string>Confirm Crop</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="pointSelect2">
+        <layout class="QVBoxLayout" name="convertToGrayScaleWindow">
          <item>
-          <widget class="QSpinBox" name="pointSelect2X"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_4">
+          <widget class="QCheckBox" name="convertGrayScale">
            <property name="text">
-            <string>Point 2 (x1, y1)</string>
+            <string>Convert to Gray Scale</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="pointSelect2Y"/>
+          <layout class="QVBoxLayout" name="applyThresholdWindow">
+           <item>
+            <widget class="QCheckBox" name="applyThresholdButton">
+             <property name="text">
+              <string>Apply Threshold</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QLabel" name="thresholdText">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Threshold</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="thresholdValue">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="thresholdSlider">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximum">
+              <number>255</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBelow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="showContours">
+             <property name="text">
+              <string>Show Contours</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="tipOrRootSelector"/>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="skeletonize">
+             <property name="text">
+              <string>Skeletonize</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="previewWindow">
+         <item>
+          <widget class="QLabel" name="previewWindowText">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Preview Window</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="PreviewWindow">
+           <property name="minimumSize">
+            <size>
+             <width>350</width>
+             <height>250</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="exportDataWindowParent">
+         <item>
+          <widget class="QCheckBox" name="exportData">
+           <property name="text">
+            <string>Export Data</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="exportDataWindow">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QCheckBox" name="contourDataEachFrame">
+               <property name="text">
+                <string>Export Contour Data of each Frame (.csv)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="tipRootOverlayVideo">
+               <property name="text">
+                <string>Export modified video with Tip/Root overlay (.mp4) (ffmeg)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="tipRootCoordinates">
+               <property name="text">
+                <string>Export Data of Tip/Root Co-ordinates vs Time (.csv)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="multiProcLayout">
+               <item>
+                <widget class="QCheckBox" name="multiProcessing">
+                 <property name="text">
+                  <string>Use Multi Processing</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="multiProcValues"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QProgressBar" name="progressBar">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="value">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QPushButton" name="exportButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Export </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="cancelButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Cancel</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
       </layout>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="loadVideo">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Load Video</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="exportVideo">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Export Data</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="playPause">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Play</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QLabel" name="previewWindowText">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Preview Window</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="previewWindow">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>400</height>
-       </size>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -2,6 +2,6 @@
     "files": [
         "mainwindow.py",
         "form.ui",
-        "PreviewWindow.py"
+        "resources.qrc"
     ]
 }

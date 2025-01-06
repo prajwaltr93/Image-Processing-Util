@@ -31,7 +31,7 @@ def checkNullPoint(point):
 def findTip(contours):
     # assume first point to be the point of interest (pun intended :))
     max_x = -1
-    tip_point = None
+    tip_point = contours[0][0][0]
     for contour in contours:
         for point in contour:
             x, y = point[0]
@@ -342,8 +342,19 @@ class MainWindow(QWidget):
         # self.ui.applyThresholdButton.setChecked(True)
         self.ui.thresholdSlider.setValue(38)
 
-        # self.moveStart = QPoint(1089, 407)
-        # self.moveStop = QPoint(1610, 699)
+        # Disable Show contours and skeletonize if threshold is not selected
+        self.ui.showContours.setDisabled(True)
+        self.ui.skeletonize.setDisabled(True)
+
+        self.ui.applyThresholdButton.clicked.connect(self.toggleApplyThresholdSelection)
+
+    def toggleApplyThresholdSelection(self):
+        if self.ui.applyThresholdButton.isChecked():
+            self.ui.showContours.setDisabled(False)
+            self.ui.skeletonize.setDisabled(False)
+        else:
+            self.ui.showContours.setDisabled(True)
+            self.ui.skeletonize.setDisabled(True)
 
     def stopExport(self):
         if isinstance(self.workerThread, QThread):
@@ -494,8 +505,9 @@ class MainWindow(QWidget):
                     if not self.ui.cropButton.isChecked():
                         contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     else:
-                        # frame = frame[self.moveStart.y(): self.moveStop.y() + self.moveStart.y(), self.moveStart.x(): self.moveStart.x() + self.moveStop.x()]
-                        frame = frame[self.moveStart.y(): self.moveStop.y(), self.moveStart.x(): self.moveStop.x()]
+                        # only if crop points have been selected !!!
+                        if not (checkNullPoint(self.moveStart) or checkNullPoint(self.moveStop)):
+                            frame = frame[self.moveStart.y(): self.moveStop.y(), self.moveStart.x(): self.moveStop.x()]
                         # skeletonize after cropping for better results
                         if self.ui.skeletonize.isChecked():
                             frame = cv2.ximgproc.thinning(frame, cv2.ximgproc.THINNING_ZHANGSUEN)
